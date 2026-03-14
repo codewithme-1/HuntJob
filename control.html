@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HuntJob | Command Center</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg: #0f111a;
+            --card: #1a1d2d;
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Login Overlay */
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); display: flex; justify-content: center; align-items: center;
+            z-index: 9999; flex-direction: column;
+        }
+        .login-box {
+            background: var(--card); padding: 40px; border-radius: 16px; border: 1px solid var(--border);
+            width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .login-box input {
+            width: 100%; padding: 14px; margin: 20px 0; border-radius: 8px; border: 1px solid var(--border);
+            background: rgba(0,0,0,0.2); color: white; outline: none; font-size: 1rem; text-align: center;
+        }
+        .login-box button {
+            width: 100%; padding: 14px; background: var(--primary); color: white; border: none;
+            border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1rem;
+        }
+        .login-box button:hover { background: var(--primary-hover); }
+
+        /* Layout */
+        .sidebar {
+            width: 260px; background: var(--card); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 20px 0;
+        }
+        .logo { padding: 0 20px 20px; font-size: 1.5rem; font-weight: 800; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+        .logo span { color: var(--primary); }
+        .nav-item {
+            padding: 15px 20px; display: flex; align-items: center; gap: 12px; color: var(--text-dim);
+            cursor: pointer; transition: 0.2s; text-decoration: none; border-left: 3px solid transparent;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(139, 92, 246, 0.1); color: var(--primary); border-left-color: var(--primary);
+        }
+
+        .main-content { flex: 1; overflow-y: auto; padding: 30px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { font-size: 1.8rem; font-weight: bold; }
+        
+        /* Generic Components */
+        .d-none { display: none !important; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        
+        /* Tables */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { text-align: left; padding: 15px; border-bottom: 2px solid var(--border); color: var(--text-dim); font-size: 0.85rem; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* Buttons & Badges */
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .badge.pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid var(--warning); }
+        .badge.success { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
+        .badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+        
+        .btn-sm { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; color: white; display:inline-flex; align-items:center; gap:5px; justify-content:center;}
+        .btn-primary { background: var(--primary); }
+        .btn-success { background: var(--success); }
+        .btn-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning); }
+        .btn-warning:hover { background: var(--warning); color: white;}
+        .btn-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .btn-danger:hover { background: var(--danger); color: white; }
+
+        /* Dashboard Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; display: flex; align-items: center; gap: 15px; }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(139, 92, 246, 0.1); color: var(--primary); display: flex; justify-content: center; align-items: center; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; margin-top: 5px; }
+
+        /* Toasts */
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: bold; z-index: 10000; animation: fadeUp 0.3s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modals & Inputs */
+        .search-bar { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: white; outline: none; width: 250px; }
+        .custom-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px;}
+        .modal-content.large { max-width: 800px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 5px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: white; outline: none; font-size: 1rem; }
+
+        /* Chat UI */
+        .chat-box { max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding-right: 5px; scrollbar-width: thin; }
+        .chat-bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
+        .chat-user { align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; border-bottom-left-radius: 2px; }
+        .chat-admin { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .chat-time { display: block; font-size: 0.65rem; opacity: 0.7; margin-top: 5px; text-align: right; }
+
+    </style>
+</head>
+<body>
+
+    <div id="loginOverlay">
+        <div class="login-box">
+            <h2><i data-lucide="shield-check" style="color:var(--primary); margin-bottom:10px;" size="40"></i><br>Admin Access</h2>
+            <input type="password" id="adminPasskey" placeholder="Enter Admin Passkey" autocomplete="off">
+            <button onclick="loginAdmin()" id="loginBtn">Authenticate</button>
+            <p id="loginError" style="color:var(--danger); margin-top:15px; font-size:0.9rem; display:none;">Access Denied.</p>
+        </div>
+    </div>
+
+    <nav class="sidebar">
+        <div class="logo">Hunt<span>Job</span> Admin</div>
+        <a class="nav-item active" data-view="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a class="nav-item" data-view="jobs"><i data-lucide="briefcase"></i> Job Management</a>
+        <a class="nav-item" data-view="submissions"><i data-lucide="check-square"></i> Submissions</a>
+        <a class="nav-item" data-view="withdrawals"><i data-lucide="banknote"></i> Withdrawals</a>
+        <a class="nav-item" data-view="users"><i data-lucide="users"></i> Users</a>
+        <a class="nav-item" data-view="tickets"><i data-lucide="life-buoy"></i> Support Tickets</a>
+        <a class="nav-item" data-view="manual-payments"><i data-lucide="file-text"></i> Manual Payments</a>
+        <div style="flex:1;"></div>
+        <a class="nav-item" onclick="logoutAdmin()" style="color:var(--danger);"><i data-lucide="log-out"></i> Secure Logout</a>
+    </nav>
+
+    <main class="main-content">
+        
+        <div id="view-dashboard" class="page-view">
+            <div class="page-header">
+                <h1 class="page-title">Overview</h1>
+                <button class="btn-sm btn-primary" onclick="refreshData()"><i data-lucide="refresh-cw" size="16" style="vertical-align: middle; margin-right:5px;"></i> Refresh</button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="users" size="24"></i></div>
+                    <div><div style="color:var(--text-dim); font-size:0.85rem;">Total Users</div><div class="stat-value" id="statUsers">0</div></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i data-lucide="briefcase" size="24"></i></div>
+                    <div><div style="color:var(--text-dim); font-size:0.85rem;">Active Jobs</div><div class="stat-value" id="statJobs">0</div></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color:var(--warning); background: rgba(245, 158, 11, 0.1);"><i data-lucide="clock" size="24"></i></div>
+                    <div><div style="color:var(--text-dim); font-size:0.85rem;">Pending Reviews</div><div class="stat-value" id="statReviews">0</div></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color:var(--success); background: rgba(16, 185, 129, 0.1);"><i data-lucide="banknote" size="24"></i></div>
+                    <div><div style="color:var(--text-dim); font-size:0.85rem;">Pending Payouts</div><div class="stat-value" id="statPayouts">KES 0</div></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Recent System Logs</h3>
+                <div class="table-container" style="margin-top: 15px;">
+                    <table>
+                        <thead><tr><th>Time</th><th>Event</th><th>Details</th></tr></thead>
+                        <tbody id="logsTableBody"><tr><td colspan="3">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-jobs" class="page-view d-none">
+            <div class="page-header">
+                <h1 class="page-title">Job Management</h1>
+                <button class="btn-sm btn-primary" onclick="openPostJobModal()"><i data-lucide="plus-circle" size="16"></i> Post New Job</button> 
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <input type="text" id="searchJob" class="search-bar" placeholder="Search job title..." onkeyup="filterJobs()">
+                <select id="filterJobStatus" class="search-bar" style="width:150px;" onchange="filterJobs()">
+                    <option value="All">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Draft">Draft</option>
+                    <option value="Expired">Expired</option>
+                </select>
+            </div>
+            <div class="card table-container">
+                <table>
+                    <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Tier</th><th>Reward</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="jobsTableBody"><tr><td colspan="7">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-submissions" class="page-view d-none">
+            <div class="page-header">
+                <h1 class="page-title">Review Submissions</h1>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <input type="text" id="searchSubmission" class="search-bar" placeholder="Search user, job, or email..." onkeyup="filterSubmissions()">
+                <select id="filterSubmissionStatus" class="search-bar" style="width:150px;" onchange="filterSubmissions()">
+                    <option value="Under Review">Under Review</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="All">All</option>
+                </select>
+            </div>
+            <div class="card table-container">
+                <table>
+                    <thead><tr><th>Date</th><th>User</th><th>Job Details</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="subsTableBody"><tr><td colspan="5">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-withdrawals" class="page-view d-none">
+            <div class="page-header">
+                <h1 class="page-title">Payout Requests</h1>
+                <button class="btn-sm btn-success" onclick="exportWithdrawalsCSV()"><i data-lucide="download" size="16"></i> Export CSV</button>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <input type="text" id="searchWithdrawal" class="search-bar" placeholder="Search phone or email..." onkeyup="filterWithdrawals()">
+                <select id="filterWithdrawalStatus" class="search-bar" style="width:150px;" onchange="filterWithdrawals()">
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Paid / Approved</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="All">All Statuses</option>
+                </select>
+            </div>
+            <div class="card table-container">
+                <table>
+                    <thead><tr><th>Date</th><th>User</th><th>Phone</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="withdrawalsTableBody"><tr><td colspan="6">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-users" class="page-view d-none">
+            <div class="page-header">
+                <h1 class="page-title">User Management</h1>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="searchUser" class="search-bar" placeholder="Search email, name, UID..." onkeyup="filterUsers()">
+                    <select id="filterTier" class="search-bar" style="width:120px;" onchange="filterUsers()">
+                        <option value="All">All Tiers</option>
+                        <option value="Pro">Pro</option>
+                        <option value="Starter">Starter</option>
+                        <option value="Unpaid">Unpaid</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card table-container">
+                <table>
+                    <thead><tr><th>UID</th><th>User Info</th><th>Tier</th><th>Tokens</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="usersTableBody"><tr><td colspan="7">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-tickets" class="page-view d-none">
+            <div class="page-header">
+                <h1 class="page-title">Support Tickets</h1>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <input type="text" id="searchTicket" class="search-bar" placeholder="Search user, ID, subject..." onkeyup="filterTickets()">
+                <select id="filterTicketStatus" class="search-bar" style="width:150px;" onchange="filterTickets()">
+                    <option value="Open">Open (Needs Reply)</option>
+                    <option value="Admin Replied">Admin Replied</option>
+                    <option value="Closed">Closed</option>
+                    <option value="All">All</option>
+                </select>
+            </div>
+            <div class="card table-container">
+                <table>
+                    <thead><tr><th>Ticket ID</th><th>User Info</th><th>Subject</th><th>Status</th><th>Updated</th><th>Actions</th></tr></thead>
+                    <tbody id="ticketsTableBody"><tr><td colspan="6">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-manual-payments" class="page-view d-none">
+            <div class="page-header">
+                <h1 class="page-title">Manual Payments Verification</h1>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <input type="text" id="searchManualPayment" class="search-bar" placeholder="Search email, UID..." onkeyup="filterManualPayments()">
+                <select id="filterManualPaymentStatus" class="search-bar" style="width:150px;" onchange="filterManualPayments()">
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="All">All</option>
+                </select>
+            </div>
+            <div class="card table-container">
+                <table>
+                    <thead><tr><th>Date</th><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="manualPaymentsTableBody"><tr><td colspan="6">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="adminChatModal" class="custom-modal d-none">
+        <div class="modal-content card" style="max-width: 600px; display: flex; flex-direction: column; max-height: 85vh;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+                <div>
+                    <h3 style="font-size: 1.1rem; margin: 0;" id="adminChatSubject">Ticket Subject</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-dim);" id="adminChatUser">user@example.com</p>
+                </div>
+                <button onclick="closeModal('adminChatModal')" style="background: none; border: none; color: var(--text-dim); cursor: pointer;"><i data-lucide="x" size="24"></i></button>
+            </div>
+            
+            <input type="hidden" id="adminChatTicketId">
+
+            <div id="adminChatBox" class="chat-box" style="flex-grow: 1;">
+                </div>
+
+            <div id="adminChatReplyArea" style="display: flex; gap: 10px; margin-top: 10px;">
+                <input type="text" id="adminChatInput" class="form-control" placeholder="Type a reply to user..." style="flex-grow: 1;">
+                <button id="adminSendReplyBtn" class="btn-sm btn-primary" onclick="adminSendTicketReply()"><i data-lucide="send" size="16"></i></button>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                 <button id="adminCloseTicketBtn" class="btn-sm btn-danger" style="flex: 1; padding: 10px;" onclick="adminCloseActiveTicket()">Force Close Ticket</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="approveWithdrawalModal" class="custom-modal d-none">
+        <div class="modal-content card">
+            <h3 style="margin-bottom: 20px; color: var(--success);">Confirm Payment</h3>
+            <input type="hidden" id="approveRowId">
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Did you successfully send the money to this user via M-Pesa?</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-sm btn-success" onclick="executeApproveWithdrawal()" style="flex:1; padding: 10px;">Yes, Mark as Paid</button>
+                <button class="btn-sm btn-danger" onclick="closeModal('approveWithdrawalModal')" style="flex:1; padding: 10px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="rejectWithdrawalModal" class="custom-modal d-none">
+        <div class="modal-content card">
+            <h3 style="margin-bottom: 20px; color: var(--danger);">Reject Payout</h3>
+            <input type="hidden" id="rejectRowId">
+            <input type="hidden" id="rejectEmail">
+            <input type="hidden" id="rejectAmount">
+            
+            <div class="form-group">
+                <label>Reason for Rejection (Visible in Logs)</label>
+                <select id="rejectReason" style="margin-bottom: 10px;">
+                    <option value="Invalid M-Pesa Number">Invalid M-Pesa Number</option>
+                    <option value="Fraudulent Activity Detected">Fraudulent Activity</option>
+                    <option value="Name Mismatch">Name Mismatch</option>
+                    <option value="Other">Other (Specify Below)</option>
+                </select>
+                <input type="text" id="rejectReasonOther" placeholder="Optional details...">
+            </div>
+            <p style="font-size: 0.85rem; color: var(--warning); margin-bottom: 15px;">Note: Rejecting will automatically refund KES back to the user's wallet.</p>
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-sm btn-danger" onclick="executeRejectWithdrawal()" style="flex:1; padding: 10px;">Confirm Rejection</button>
+                <button class="btn-sm btn-primary" onclick="closeModal('rejectWithdrawalModal')" style="flex:1; padding: 10px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editUserModal" class="custom-modal d-none">
+        <div class="modal-content card">
+            <h3 style="margin-bottom: 20px;">Edit User Settings</h3>
+            <input type="hidden" id="editRowId">
+            <input type="hidden" id="editUserEmail">
+            
+            <div class="form-group">
+                <label>User</label>
+                <input type="text" id="editUserDisplay" disabled style="background: rgba(255,255,255,0.05);">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                    <label>Account Tier</label>
+                    <select id="editUserTier"><option value="Unpaid">Unpaid</option><option value="Starter">Starter</option><option value="Pro">Pro</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Email Verified</label>
+                    <select id="editUserVerified"><option value="true">Yes</option><option value="false">No</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Tokens</label>
+                    <input type="number" id="editUserTokens" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Wallet Balance (KES)</label>
+                    <input type="number" id="editUserBalance" min="0" step="0.01">
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:10px;">
+                <label>Account Status (Ban/Suspend)</label>
+                <select id="editUserStatus" style="border-color: var(--warning);">
+                    <option value="Active">Active</option>
+                    <option value="Suspended">Suspended (Cannot Login)</option>
+                    <option value="Banned">Banned (Permanent)</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                <button class="btn-sm btn-warning" onclick="resetUserPassword()"><i data-lucide="key" size="14"></i> Force Password Reset</button>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button class="btn-sm btn-primary" onclick="saveUserEdit()" style="flex:1; padding: 10px;">Save Changes</button>
+                <button class="btn-sm btn-danger" onclick="closeModal('editUserModal')" style="flex:1; padding: 10px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="userActivityModal" class="custom-modal d-none">
+        <div class="modal-content card large">
+            <h3 style="margin-bottom: 20px;" id="activityTitle">User Activity</h3>
+            <div id="activityContent">Loading data...</div>
+            <button class="btn-sm btn-danger" onclick="closeModal('userActivityModal')" style="width:100%; margin-top: 20px; padding: 10px;">Close</button>
+        </div>
+    </div>
+
+    <div id="resetPasswordModal" class="custom-modal d-none">
+        <div class="modal-content card">
+            <h3 style="margin-bottom: 20px; color: var(--warning);">Confirm Password Reset</h3>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Are you sure you want to force a password reset? The user will be emailed a new temporary PIN.</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-sm btn-warning" onclick="executePasswordReset()" style="flex:1; padding: 10px; color: white;">Yes, Reset It</button>
+                <button class="btn-sm btn-primary" onclick="closeModal('resetPasswordModal')" style="flex:1; padding: 10px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reviewSubmissionModal" class="custom-modal d-none">
+        <div class="modal-content card large">
+            <h3 style="margin-bottom: 20px; color: var(--primary);">Review Submission</h3>
+            <input type="hidden" id="reviewRowId">
+            <input type="hidden" id="reviewUid">
+            <input type="hidden" id="reviewReward">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                    <h4 style="color: var(--text-dim); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 5px;">User</h4>
+                    <p id="reviewUserDisplay" style="font-weight: bold;"></p>
+                </div>
+                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                    <h4 style="color: var(--text-dim); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 5px;">Reward</h4>
+                    <p id="reviewRewardDisplay" style="font-weight: bold; color: var(--success);"></p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Job Title</label>
+                <input type="text" id="reviewJobTitle" disabled style="background: rgba(255,255,255,0.05);">
+            </div>
+
+            <div class="form-group">
+                <label>User's Initial Proposal</label>
+                <textarea id="reviewProposal" disabled style="width: 100%; height: 80px; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-main); resize: none;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Final Submitted Work</label>
+                <textarea id="reviewContent" disabled style="width: 100%; height: 120px; padding: 10px; border-radius: 6px; border: 1px solid var(--primary); background: rgba(0,0,0,0.3); color: white; resize: none;"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button class="btn-sm btn-success" onclick="executeApproveSubmission()" style="flex:1; padding: 12px; font-size: 1rem;"><i data-lucide="check-circle" size="18"></i> Approve & Pay</button>
+                <button class="btn-sm btn-danger" onclick="executeRejectSubmission()" style="flex:1; padding: 12px; font-size: 1rem;"><i data-lucide="x-circle" size="18"></i> Reject</button>
+                <button class="btn-sm btn-warning" onclick="closeModal('reviewSubmissionModal')" style="flex:0.5; padding: 12px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="jobModal" class="custom-modal d-none">
+        <div class="modal-content card">
+            <h3 style="margin-bottom: 20px;" id="jobModalTitle">Post New Task</h3>
+            <input type="hidden" id="jobRowId">
+            
+            <div class="form-group">
+                <label>Job Title</label>
+                <input type="text" id="jobTitle" placeholder="e.g., Logo Design for Tech Startup">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="jobCategory">
+                        <option value="Writing">Writing</option>
+                        <option value="Design">Design</option>
+                        <option value="Data Entry">Data Entry</option>
+                        <option value="Social Media">Social Media</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target Tier</label>
+                    <select id="jobTier">
+                        <option value="Unpaid">Unpaid (Free)</option>
+                        <option value="Starter">Starter</option>
+                        <option value="Pro">Pro Only</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Reward (KES)</label>
+                    <input type="number" id="jobReward" placeholder="500">
+                </div>
+                <div class="form-group">
+                    <label>Token Cost to Bid</label>
+                    <input type="number" id="jobTokens" value="2">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Job Description & Requirements</label>
+                <textarea id="jobDesc" style="width: 100%; height: 100px; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: white; resize: none;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Publishing Status</label>
+                <select id="jobStatus" style="border: 1px solid var(--primary);">
+                    <option value="Draft">Draft (Publish at 6AM tomorrow)</option>
+                    <option value="Active">Active (Go Live Now)</option>
+                    <option value="Expired">Expired (Closed)</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-sm btn-primary" onclick="saveJob()" style="flex:1; padding: 12px;">Save Task</button>
+                <button class="btn-sm btn-danger" onclick="closeModal('jobModal')" style="flex:1; padding: 12px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="verifyManualPaymentModal" class="custom-modal d-none">
+        <div class="modal-content card">
+            <h3 style="margin-bottom: 20px; color: var(--primary);">Verify Manual Payment</h3>
+            <input type="hidden" id="verifyManualRowId">
+            <div class="form-group">
+                <label>User Info</label>
+                <p id="verifyManualUser" style="color: white; font-weight: bold; margin-bottom: 10px;"></p>
+            </div>
+            <div class="form-group">
+                <label>Payment Type & Amount</label>
+                <p id="verifyManualDetails" style="color: var(--warning); font-weight: bold; margin-bottom: 10px;"></p>
+            </div>
+            <div class="form-group">
+                <label>Submitted M-Pesa Message</label>
+                <textarea id="verifyManualMessage" disabled style="width: 100%; height: 100px; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-main); resize: none;"></textarea>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button class="btn-sm btn-success" onclick="executeApproveManualPayment()" style="flex:1; padding: 12px; font-size: 1rem;"><i data-lucide="check-circle" size="18"></i> Approve</button>
+                <button class="btn-sm btn-danger" onclick="executeRejectManualPayment()" style="flex:1; padding: 12px; font-size: 1rem;"><i data-lucide="x-circle" size="18"></i> Reject</button>
+                <button class="btn-sm btn-warning" onclick="closeModal('verifyManualPaymentModal')" style="flex:0.5; padding: 12px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

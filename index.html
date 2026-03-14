@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HuntJob | Hunt, Write, Secure the Bag</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --bg-color: #0a0a0c;
+            --card-bg: #16161a;
+            --primary: #8b5cf6; /* Vibrant Purple */
+            --secondary: #d946ef; /* Pinkish accent */
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Gradient Background Glow */
+        body::before {
+            content: "";
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 40%;
+            height: 40%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        /* Navigation */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 8%;
+            background: rgba(10, 10, 12, 0.8);
+            backdrop-filter: blur(15px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            cursor: pointer;
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .btn-nav {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-nav:hover {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 5%;
+            padding-top: 80px;
+        }
+
+        .badge {
+            background: var(--glass);
+            color: var(--primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h1 {
+            font-size: clamp(2.8rem, 10vw, 5rem);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-dim);
+            max-width: 650px;
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1.2rem;
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-main:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-alt {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid var(--glass-border);
+            padding: 1.2rem 2.5rem;
+            border-radius: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-alt:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Section Header */
+        .section-header { text-align: center; margin-bottom: 4rem; }
+        .section-header h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .section-header p { color: var(--text-dim); }
+
+        /* Card Hover Effects */
+        .process-card, .task-card, .package-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .process-card:hover, .task-card:hover, .package-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+        }
+
+        /* Process Section */
+        .process { padding: 100px 8%; text-align: center; }
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        .process-card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            text-align: left;
+        }
+        .step-num {
+            width: 40px; height: 40px; background: var(--primary); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; margin-bottom: 1.5rem;
+        }
+
+        /* Jobs Showcase */
+        #tasks { padding: 100px 8%; background: rgba(255,255,255,0.01); }
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .task-card { 
+            background: var(--card-bg); padding: 2rem; border-radius: 20px; 
+            border: 1px solid var(--glass-border); position: relative; overflow: hidden;
+        }
+        .task-card.locked { filter: grayscale(0.8); }
+        .lock-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.6); 
+            backdrop-filter: blur(6px); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; opacity: 0; transition: 0.3s;
+        }
+        .task-card:hover .lock-overlay { opacity: 1; }
+        .badge-price { background: var(--success); color: white; padding: 4px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; display: inline-block; }
+
+        /* Pricing Section */
+        #pricing { padding: 100px 8%; }
+        .package-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto; }
+        .package-card { 
+            background: var(--glass); padding: 3rem 2rem; border-radius: 24px; 
+            border: 1px solid var(--glass-border); text-align: center;
+        }
+        .package-card.popular { border-color: var(--primary); background: rgba(139, 92, 246, 0.05); }
+        .price { font-size: 3.5rem; font-weight: 800; margin: 1.5rem 0; }
+        .price span { font-size: 1rem; color: var(--text-dim); }
+        .feat-list { list-style: none; margin-bottom: 2rem; text-align: left; }
+        .feat-list li { margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: var(--text-dim); font-size: 0.95rem; }
+
+        /* --- Auth Modal Styling --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px); display: none;
+            justify-content: center; align-items: center; z-index: 2000;
+        }
+
+        .modal-content {
+            background: var(--card-bg); width: 95%; max-width: 440px;
+            padding: 2.5rem; border-radius: 28px; border: 1px solid var(--glass-border);
+            position: relative; animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .close-modal {
+            position: absolute; top: 1.5rem; right: 1.5rem; background: none;
+            border: none; color: var(--text-dim); font-size: 1.5rem; cursor: pointer;
+        }
+
+        .auth-tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--glass-border); }
+        .auth-tabs button {
+            background: none; border: none; color: var(--text-dim); padding: 10px 0;
+            cursor: pointer; font-weight: 600; flex: 1; border-bottom: 2px solid transparent;
+        }
+        .auth-tabs button.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        .auth-form h2 { margin-bottom: 1.5rem; font-size: 1.5rem; }
+        .input-group {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 12px 15px; display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;
+        }
+        .input-group input { background: none; border: none; color: white; width: 100%; outline: none; }
+
+        .strength-container { height: 4px; background: #222; border-radius: 10px; margin-bottom: 5px; overflow: hidden; }
+        #strengthBar { height: 100%; width: 0%; transition: 0.4s; background: #ef4444; }
+        #strengthText { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+
+        .otp-input-wrapper input {
+            width: 100%; text-align: center; letter-spacing: 12px; font-size: 1.8rem;
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 15px; margin: 2rem 0; color: var(--primary); font-weight: 800;
+        }
+
+        .auth-options { display: flex; justify-content: flex-end; margin-bottom: 1.5rem; }
+        .auth-options a { font-size: 0.85rem; color: var(--primary); text-decoration: none; }
+        .terms-check { display: flex; gap: 10px; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1.5rem; cursor: pointer; }
+        .d-none { display: none !important; }
+        .w-100 { width: 100%; }
+
+        /* Custom Toast Notifications */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: var(--card-bg); color: white; padding: 12px 24px; border-radius: 12px;
+            border: 1px solid var(--glass-border); z-index: 3000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: 600; font-size: 0.9rem; pointer-events: none;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid #ef4444; }
+
+        /* Footer */
+        footer { background: #050507; padding: 80px 8% 40px; border-top: 1px solid var(--glass-border); }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 4rem; margin-bottom: 60px; }
+        .footer-logo h3 { margin-bottom: 1.5rem; }
+        .footer-links h4 { margin-bottom: 1.5rem; color: var(--primary); font-size: 1rem; text-transform: uppercase; }
+        .footer-links ul { list-style: none; }
+        .footer-links li { margin-bottom: 12px; }
+        .footer-links a { color: var(--text-dim); text-decoration: none; transition: 0.3s; font-size: 0.9rem; }
+        .footer-links a:hover { color: white; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .nav-links { 
+                position: fixed; 
+                top: -100vh; 
+                left: 0; 
+                width: 100%; 
+                height: 100vh;
+                background: rgba(10, 10, 12, 0.98); 
+                backdrop-filter: blur(20px);
+                flex-direction: column; 
+                justify-content: center;
+                align-items: center;
+                padding: 5rem 0; 
+                transition: 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+                z-index: 999;
+                display: flex;
+                gap: 2.5rem;
+            }
+            .nav-links.active { top: 0; }
+            .nav-links a { font-size: 1.5rem; font-weight: 600; }
+            .menu-toggle { display: block; }
+            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .hero-btns { flex-direction: column; width: 100%; }
+            .btn-main, .btn-alt { width: 100%; justify-content: center; }
+            h1 { font-size: 3.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">Hunt<span>Job</span></div>
+        <div class="nav-links" id="navLinks">
+            <a href="#how">How it Works</a>
+            <a href="#tasks">Writing Tasks</a>
+            <a href="#pricing">Packages</a>
+            <button class="btn-nav" id="navRegisterBtn">Get Started</button>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+            <i data-lucide="menu"></i>
+        </button>
+    </nav>
+
+    <section class="hero">
+        <div class="badge">
+            <i data-lucide="zap" size="16"></i> No.1 Writing Hub for Gen Z
+        </div>
+        <h1>Hunt, Write & <br><span class="gradient-text">Secure the Bag</span></h1>
+        <p>The ultimate gig platform. Pick a writing task, submit your work, and get paid directly via M-Pesa. No complex interviews, just pure hustle.</p>
+        
+        <div class="hero-btns">
+            <button class="btn-main" id="heroGetStartedBtn">
+                Get Started <i data-lucide="chevron-right"></i>
+            </button>
+            <button class="btn-alt" onclick="location.href='#how'">How it works</button>
+        </div>
+    </section>
+
+    <section class="process" id="how">
+        <div class="section-header">
+            <h2>Get Paid in 4 Simple Steps</h2>
+            <p>Your journey from hunter to earner starts here.</p>
+        </div>
+        <div class="process-grid">
+            <div class="process-card">
+                <div class="step-num">1</div>
+                <h3>Register</h3>
+                <p>Create your Hunter account and agree to our community terms.</p>
+            </div>
+            <div class="process-card">
+                <div class="step-num">2</div>
+                <h3>Pick a Package</h3>
+                <p>Unlock premium high-paying tasks by selecting a hustle tier.</p>
+            </div>
+            <div class="process-card">
+                <div class="step-num">3</div>
+                <h3>Complete Tasks</h3>
+                <p>Choose writing jobs that fit your style and submit before the deadline.</p>
+            </div>
+            <div class="process-card">
+                <div class="step-num">4</div>
+                <h3>Withdraw</h3>
+                <p>Once approved, move your earnings directly to your mobile wallet.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="tasks">
+        <div class="section-header">
+            <h2>Latest Writing Hustles</h2>
+            <p>Don't let these opportunities slide. Upgrade to claim them.</p>
+        </div>
+        <div class="task-grid">
+            <div class="task-card locked">
+                <div class="badge-price">KES 1,500</div>
+                <h3 style="margin-top:1.5rem;">Cryptocurrency Guide</h3>
+                <p style="font-size:0.9rem; color:var(--text-dim); margin-top:0.5rem;">Write an 800-word beginner's guide to Web3.</p>
+                <div class="lock-overlay">
+                    <i data-lucide="lock" color="#8b5cf6"></i>
+                    <p style="font-weight:700; margin-top:10px;">Upgrade to Unlock</p>
+                </div>
+            </div>
+            <div class="task-card locked">
+                <div class="badge-price">KES 2,200</div>
+                <h3 style="margin-top:1.5rem;">Product Review</h3>
+                <p style="font-size:0.9rem; color:var(--text-dim); margin-top:0.5rem;">Detailed review for a leading smartphone brand.</p>
+                <div class="lock-overlay">
+                    <i data-lucide="lock" color="#8b5cf6"></i>
+                    <p style="font-weight:700; margin-top:10px;">Upgrade to Unlock</p>
+                </div>
+            </div>
+            <div class="task-card locked">
+                <div class="badge-price">KES 900</div>
+                <h3 style="margin-top:1.5rem;">Social Media Copy</h3>
+                <p style="font-size:0.9rem; color:var(--text-dim); margin-top:0.5rem;">Craft 10 engaging tweets for a startup.</p>
+                <div class="lock-overlay">
+                    <i data-lucide="lock" color="#8b5cf6"></i>
+                    <p style="font-weight:700; margin-top:10px;">Upgrade to Unlock</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing">
+        <div class="section-header">
+            <h2>Select Your Hustle Tier</h2>
+            <p>One-time activation fee. Lifetime access to writing tasks.</p>
+        </div>
+        <div class="package-grid">
+            <div class="package-card">
+                <h3>Starter Hunter</h3>
+                <div class="price">500<span> / One-time</span></div>
+                <ul class="feat-list">
+                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> Daily 2 Tasks</li>
+                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> Standard Payouts</li>
+                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> 5% Referral Bonus</li>
+                </ul>
+                <button class="btn-alt" style="width:100%;">Get Started</button>
+            </div>
+            <div class="package-card popular">
+                <div style="background:var(--primary); color:white; font-size:0.7rem; font-weight:800; padding:4px 12px; border-radius:20px; display:inline-block; margin-bottom:1rem;">MOST POPULAR</div>
+                <h3>Pro Hunter</h3>
+                <div class="price">1,500<span> / One-time</span></div>
+                <ul class="feat-list">
+                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> Unlimited Daily Tasks</li>
+                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> Instant M-Pesa Payouts</li>
+                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> 15% Referral Bonus</li>
+                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> Priority Support</li>
+                </ul>
+                <button class="btn-main" style="width:100%; border-radius:10px;">Select Pro</button>
+            </div>
+        </div>
+    </section>
+
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModal">&times;</button>
+            
+            <div class="auth-tabs" id="authTabs">
+                <button id="loginTabBtn" class="active">Login</button>
+                <button id="registerTabBtn">Register</button>
+            </div>
+
+            <form id="loginForm" class="auth-form">
+                <h2>Welcome Back</h2>
+                <div class="input-group">
+                    <i data-lucide="mail"></i>
+                    <input type="email" id="loginEmail" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="loginPass" placeholder="Password" required>
+                </div>
+                <div class="auth-options">
+                    <a href="#" id="forgotPassBtn">Forgot Password?</a>
+                </div>
+                <button type="submit" class="btn-main w-100">Login to HuntJob</button>
+            </form>
+
+            <form id="registerForm" class="auth-form d-none">
+                <h2>Create Hunter Account</h2>
+                <div class="input-group">
+                    <i data-lucide="user"></i>
+                    <input type="text" id="regName" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <i data-lucide="mail"></i>
+                    <input type="email" id="regEmail" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <i data-lucide="phone"></i>
+                    <input type="tel" id="regPhone" placeholder="+2547..." required>
+                </div>
+                <div class="input-group">
+                    <i data-lucide="shield-check"></i>
+                    <input type="password" id="regPass" placeholder="Password (Min 12 chars)" required>
+                </div>
+                <div class="strength-container">
+                    <div id="strengthBar"></div>
+                </div>
+                <p id="strengthText">Password must be 12+ characters</p>
+
+                <input type="hidden" id="refCodeInput">
+
+                <label class="terms-check">
+                    <input type="checkbox" id="termsCheck" required>
+                    <span>I agree to the <a href="#">User Agreement</a></span>
+                </label>
+                <button type="submit" class="btn-main w-100" id="regSubmitBtn">Create Account & Verify</button>
+            </form>
+
+            <div id="otpSection" class="auth-form d-none">
+                <div style="text-align: center;">
+                    <i data-lucide="mail-check" size="48" color="#8b5cf6"></i>
+                    <h2>Verify Your Email</h2>
+                    <p>We've sent a 6-digit code to your email. Check your inbox.</p>
+                </div>
+                <div class="otp-input-wrapper">
+                    <input type="text" id="otpCode" placeholder="0 0 0 0 0 0" maxlength="6">
+                </div>
+                <button class="btn-main w-100" id="verifyOtpBtn">Complete Registration</button>
+                <button class="btn-alt w-100" style="margin-top:10px; border:none;" id="resendOtp">Resend Code</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-logo">
+                <div class="logo">Hunt<span>Job</span></div>
+                <p style="margin-top:1.5rem; font-size:0.9rem; color:var(--text-dim);">Empowering the next generation of digital writers in Kenya. Hunt tasks, write content, and grow your wallet.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Platform</h4>
+                <ul>
+                    <li><a href="#how">How it Works</a></li>
+                    <li><a href="#tasks">Hustles</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Community</h4>
+                <ul>
+                    <li><a href="#">WhatsApp Group</a></li>
+                    <li><a href="#">Refer & Earn</a></li>
+                    <li><a href="#">Success Stories</a></li>
+                </ul>
+            </div>
+        </div>
+        <div style="text-align:center; padding-top:40px; border-top:1px solid var(--glass-border); color:var(--text-dim); font-size:0.8rem;">
+            &copy; 2026 HuntJob Kenya. All Rights Reserved.
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const referralCode = urlParams.get('ref') || "";
+            document.getElementById('refCodeInput').value = referralCode;
+
+            // Automatically open registration modal if they clicked a referral link
+            if (referralCode) {
+                document.getElementById('authModal').style.display = 'flex';
+                document.getElementById('registerTabBtn').click();
+            }
+        });
+    </script>
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
