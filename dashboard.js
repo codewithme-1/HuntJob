@@ -601,8 +601,66 @@ function displayFilteredJobs(jobsToRender) {
 }
 
 /**
- * --- UPGRADE & PAYMENT LOGIC ---
+ * --- UPGRADE, PAYMENT & POLLING LOGIC ---
  */
+
+// NEW: Polling Engine
+window.startPaymentPolling = function() {
+    const session = JSON.parse(localStorage.getItem('huntJob_session'));
+    if (!session || !session.email) return;
+
+    const previousTokens = parseSafeNumber(session.tokens);
+    const previousTier = session.tier;
+
+    let pollCount = 0;
+    const paymentPoll = setInterval(async () => {
+        pollCount++;
+        
+        // Stop polling after 2 minutes (30 attempts)
+        if (pollCount > 30) {
+            clearInterval(paymentPoll);
+            console.log("Polling stopped.");
+            return;
+        }
+
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    action: "pollPaymentStatus", 
+                    email: session.email 
+                })
+            });
+            
+            const text = await res.text();
+            const result = JSON.parse(text);
+
+            if (result.status === "Success") {
+                const liveTokens = parseSafeNumber(result.data.tokens);
+                const liveTier = result.data.tier;
+                
+                // Check if tokens or tier increased
+                if (liveTokens > previousTokens || liveTier !== previousTier) {
+                    clearInterval(paymentPoll); // Stop polling!
+                    
+                    showToast("Payment Received & Reconciled! Your account has been updated.", "success");
+                    
+                    // Force a full UI sync to update everything properly
+                    await syncAllData(session.email);
+                    
+                    // Close modals just in case they are still open
+                    closeModal('paymentModal');
+                    closeModal('tokenModal');
+                    closeModal('fundCoPayModal');
+                    closeModal('manageCoPayModal');
+                }
+            }
+        } catch (e) {
+            console.error("Polling error", e);
+        }
+    }, 4000);
+};
+
 window.upgradeRedirect = function() {
     window.navigateToView('upgrade');
 };
@@ -647,8 +705,8 @@ window.processPayment = async function() {
         const result = await response.json();
         
         if (result.status === "Success") {
-            showToast("STK Push sent! Once paid, refresh the page.", "success");
-            setTimeout(() => { closeModal('paymentModal'); }, 3000);
+            showToast("STK Push sent! Enter PIN, then wait a moment...", "success");
+            startPaymentPolling(); // Start listening for the DB to update
         } else {
             showToast(result.message || "Payment rejected.", "error");
         }
@@ -696,8 +754,8 @@ window.processTokenPayment = async function() {
         const result = await response.json();
         
         if (result.status === "Success") {
-            showToast("STK Push sent! Enter PIN, then refresh.", "success");
-            setTimeout(() => { closeModal('tokenModal'); }, 3000);
+            showToast("STK Push sent! Enter PIN, then wait a moment...", "success");
+            startPaymentPolling(); // Start listening for the DB to update
         } else { showToast(result.message || "Payment rejected.", "error"); }
     } catch (err) { showToast("Payment service busy. Try again.", "error"); } 
     finally { btn.innerText = "Pay Now"; btn.disabled = false; }
@@ -1147,7 +1205,8 @@ window.payHalfMpesa = async function(isSelf) {
         const text = await res.text();
         const result = JSON.parse(text);
         if (result.status === "Success") {
-            showToast("STK Push sent successfully!", "success");
+            showToast("STK Push sent! Enter PIN, then wait a moment...", "success");
+            startPaymentPolling(); // Start listening for the DB to update
         } else {
             showToast(result.message || "Failed to trigger STK.", "error");
         }
@@ -1267,8 +1326,8 @@ window.fundWithSTK = async function() {
         const text = await res.text();
         const result = JSON.parse(text);
         if (result.status === "Success") {
-            showToast("STK Push sent successfully!", "success");
-            setTimeout(() => { closeModal('fundCoPayModal'); }, 3000);
+            showToast("STK Push sent! Enter PIN, then wait a moment...", "success");
+            startPaymentPolling(); // Start listening for the DB to update
         } else { showToast(result.message, "error"); }
     } catch(e) { showToast("Payment service error.", "error"); }
 };
