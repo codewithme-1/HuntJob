@@ -449,7 +449,7 @@
                 
                 <div class="mpesa-input-wrapper" style="margin-bottom: 2rem;">
                     <label>Recipient M-Pesa Number</label>
-                    <input type="text" id="withdrawPhone" placeholder="e.g. 2547XXXXXXXX">
+                    <input type="text" id="withdrawPhone" placeholder="e.g. 07XXXXXXXX">
                 </div>
 
                 <button class="btn-hunt" style="width:100%; padding: 1.2rem; font-size: 1rem;" onclick="requestWithdrawal()">
@@ -602,7 +602,7 @@
                 <div class="form-group" style="text-align:left;">
                     <label>Or instantly send an STK Push to your friend's phone:</label>
                     <div style="display:flex; gap:10px;">
-                        <input type="tel" id="friendPhoneSTK" class="form-control" placeholder="2547XXXXXXXX">
+                        <input type="tel" id="friendPhoneSTK" class="form-control" placeholder="07XXXXXXXX">
                         <button class="btn-hunt" style="background:var(--secondary);" onclick="payHalfMpesa(false)"><i data-lucide="send" size="18"></i></button>
                     </div>
                 </div>
@@ -649,7 +649,7 @@
                 <div class="form-group" style="text-align:left; margin:0;">
                     <label>Or Pay via M-Pesa STK:</label>
                     <div style="display:flex; gap:10px;">
-                        <input type="tel" id="fundMpesaPhone" class="form-control" placeholder="2547XXXXXXXX">
+                        <input type="tel" id="fundMpesaPhone" class="form-control" placeholder="07XXXXXXXX">
                         <button class="btn-hunt" style="background:var(--primary);" onclick="fundWithSTK()"><i data-lucide="smartphone" size="18"></i></button>
                     </div>
                 </div>
@@ -729,7 +729,7 @@
             <h2 style="margin-top: 10px;">Buy Tokens</h2>
             <p style="color: var(--text-dim); font-size: 0.9rem;">Tokens are required to submit proposals for jobs.</p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0;">
-                <button class="btn-alt" style="padding: 10px;" onclick="buyTokens(1, 20)">
+                <button class="btn-alt" style="padding: 10px;" onclick="buyTokens(50, 20)">
                     <strong style="color: white; font-size: 1rem;">50 KES</strong><br><small style="color: var(--success);">20 Tokens</small>
                 </button>
                 <button class="btn-alt" style="padding: 10px;" onclick="buyTokens(100, 50)">
@@ -744,7 +744,7 @@
             </div>
             <div class="form-group" style="text-align: left;">
                 <label>M-Pesa Number</label>
-                <input type="text" id="tokenPhone" class="form-control" placeholder="2547XX...">
+                <input type="text" id="tokenPhone" class="form-control" placeholder="07XX...">
             </div>
             <button class="btn-hunt" id="payTokenBtn" style="width: 100%; display:none; margin-top: 10px;" onclick="processTokenPayment()">Pay Now</button>
             <button class="btn-alt" style="margin-top: 10px; width: 100%; border:none;" onclick="closeModal('tokenModal')">Cancel</button>
@@ -759,7 +759,7 @@
             <p style="color: var(--text-dim); margin-bottom: 1.5rem;">Enter your phone number to receive an STK Push for <span id="payAmountLabel" style="color: white; font-weight: 800;">KES 0</span>.</p>
             <div style="text-align: left; margin-bottom: 1.5rem;">
                 <label style="font-size: 0.8rem; color: var(--text-dim);">Phone Number</label>
-                <input type="tel" id="payPhone" placeholder="2547XXXXXXXX" style="width: 100%; padding: 14px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; font-size: 1rem; margin-top: 5px;">
+                <input type="tel" id="payPhone" placeholder="07XXXXXXXX" style="width: 100%; padding: 14px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; font-size: 1rem; margin-top: 5px;">
             </div>
             <button class="btn-hunt" id="paySubmitBtn" style="width: 100%; padding: 1.2rem;" onclick="processPayment()">Initiate Payment</button>
             <button class="btn-alt" style="margin-top: 10px; width: 100%; border: none;" onclick="closeModal('paymentModal')">Cancel</button>
