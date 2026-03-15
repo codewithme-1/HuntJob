@@ -4,27 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HuntJob | Hunt, Write, Secure the Bag</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         :root {
-            --bg-color: #0a0a0c;
-            --card-bg: #16161a;
-            --primary: #8b5cf6; /* Vibrant Purple */
-            --secondary: #d946ef; /* Pinkish accent */
-            --text-main: #ffffff;
-            --text-dim: #94a3b8;
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            /* Fintech Palette: Crisp Whites, Deep Navy, Emerald Green */
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #10b981; /* Emerald Green */
+            --primary-hover: #059669;
+            --secondary: #0ea5e9; /* Secondary Blue Accent */
+            --text-main: #64748b; /* Deep Navy */
+            --text-dim: #64748b; /* Slate Gray */
+            --glass: #ffffff;
+            --glass-border: #e2e8f0;
             --success: #10b981;
+            
+            /* Soft Fintech Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -2px rgba(15, 23, 42, 0.02);
+            --shadow-float: 0 20px 25px -5px rgba(15, 23, 42, 0.05), 0 10px 10px -5px rgba(15, 23, 42, 0.02);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             scroll-behavior: smooth;
         }
 
@@ -35,15 +44,15 @@
             line-height: 1.6;
         }
 
-        /* Gradient Background Glow */
+        /* Subtle Background Pattern (Removed heavy glow for cleaner look) */
         body::before {
             content: "";
             position: absolute;
-            top: -10%;
-            left: -10%;
-            width: 40%;
-            height: 40%;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 600px;
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, rgba(248, 250, 252, 0) 100%);
             z-index: -1;
         }
 
@@ -53,20 +62,24 @@
             justify-content: space-between;
             align-items: center;
             padding: 1.2rem 8%;
-            background: rgba(10, 10, 12, 0.8);
-            backdrop-filter: blur(15px);
+            background: #ffffff; /* FIXED: Solid white background */
             position: fixed;
             width: 100%;
             top: 0;
             z-index: 1000;
             border-bottom: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-sm);
         }
 
         .logo {
             font-size: 1.6rem;
             font-weight: 800;
-            letter-spacing: -1.5px;
+            letter-spacing: -1px;
             cursor: pointer;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .logo span {
@@ -82,13 +95,13 @@
         .nav-links a {
             color: var(--text-dim);
             text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-size: 0.95rem;
+            font-weight: 600;
             transition: 0.3s;
         }
 
         .nav-links a:hover {
-            color: var(--primary);
+            color: var(--text-main);
         }
 
         .btn-nav {
@@ -96,45 +109,48 @@
             color: white;
             border: none;
             padding: 0.7rem 1.5rem;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
         }
 
         .btn-nav:hover {
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
         }
 
         .menu-toggle {
             display: none;
             background: none;
             border: none;
-            color: white;
+            color: var(--text-main);
             cursor: pointer;
             z-index: 1001;
         }
 
         /* Hero Section */
         .hero {
-            min-height: 100vh;
+            min-height: 90vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             padding: 0 5%;
-            padding-top: 80px;
+            padding-top: 100px;
         }
 
         .badge {
-            background: var(--glass);
-            color: var(--primary);
-            padding: 0.6rem 1.2rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary-hover);
+            padding: 0.5rem 1.2rem;
             border-radius: 50px;
             font-size: 0.85rem;
-            font-weight: 600;
-            border: 1px solid var(--glass-border);
+            font-weight: 700;
+            border: 1px solid rgba(16, 185, 129, 0.2);
             margin-bottom: 2rem;
             display: inline-flex;
             align-items: center;
@@ -142,23 +158,22 @@
         }
 
         h1 {
-            font-size: clamp(2.8rem, 10vw, 5rem);
+            font-size: clamp(2.8rem, 8vw, 4.5rem);
             font-weight: 800;
-            line-height: 1.05;
-            letter-spacing: -2px;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
             margin-bottom: 1.5rem;
+            color: var(--text-main);
         }
 
         .gradient-text {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--primary);
         }
 
         .hero p {
             color: var(--text-dim);
             max-width: 650px;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             margin-bottom: 3rem;
         }
 
@@ -172,172 +187,199 @@
             color: white;
             border: none;
             padding: 1.2rem 2.5rem;
-            border-radius: 14px;
+            border-radius: 10px;
             font-weight: 700;
             font-size: 1rem;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
             cursor: pointer;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
         }
 
         .btn-main:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+            background: var(--primary-hover);
         }
 
         .btn-alt {
-            background: rgba(255,255,255,0.05);
-            color: white;
+            background: var(--card-bg);
+            color: var(--text-main);
             border: 1px solid var(--glass-border);
             padding: 1.2rem 2.5rem;
-            border-radius: 14px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             transition: 0.3s;
+            box-shadow: var(--shadow-sm);
         }
 
         .btn-alt:hover {
-            background: rgba(255,255,255,0.1);
+            background: var(--bg-color);
+            border-color: #cbd5e1;
         }
 
         /* Section Header */
         .section-header { text-align: center; margin-bottom: 4rem; }
-        .section-header h2 { font-size: 2.5rem; margin-bottom: 1rem; }
-        .section-header p { color: var(--text-dim); }
+        .section-header h2 { font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-main); letter-spacing: -1px;}
+        .section-header p { color: var(--text-dim); font-size: 1.1rem;}
 
         /* Card Hover Effects */
         .process-card, .task-card, .package-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s ease;
             cursor: pointer;
         }
 
         .process-card:hover, .task-card:hover, .package-card:hover {
-            transform: translateY(-12px) scale(1.02);
-            border-color: var(--primary);
-            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-float);
+            border-color: rgba(16, 185, 129, 0.3);
         }
 
         /* Process Section */
-        .process { padding: 100px 8%; text-align: center; }
+        .process { padding: 100px 8%; text-align: center; background: white; }
         .process-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         .process-card {
-            background: var(--card-bg);
+            background: var(--bg-color);
             padding: 2.5rem;
-            border-radius: 24px;
+            border-radius: 16px;
             border: 1px solid var(--glass-border);
             text-align: left;
         }
         .step-num {
-            width: 40px; height: 40px; background: var(--primary); border-radius: 50%;
+            width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); 
+            color: var(--primary-hover); border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; margin-bottom: 1.5rem;
+            font-weight: 800; font-size: 1.2rem; margin-bottom: 1.5rem;
         }
+        .process-card h3 { color: var(--text-main); margin-bottom: 10px;}
+        .process-card p { color: var(--text-dim); font-size: 0.95rem; }
 
         /* Jobs Showcase */
-        #tasks { padding: 100px 8%; background: rgba(255,255,255,0.01); }
-        .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        #tasks { padding: 100px 8%; background: var(--bg-color); }
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto;}
         .task-card { 
-            background: var(--card-bg); padding: 2rem; border-radius: 20px; 
+            background: var(--card-bg); padding: 2rem; border-radius: 16px; 
             border: 1px solid var(--glass-border); position: relative; overflow: hidden;
+            box-shadow: var(--shadow-md);
         }
-        .task-card.locked { filter: grayscale(0.8); }
+        .task-card h3 { color: var(--text-main); }
+        .task-card.locked { opacity: 0.9; }
         .lock-overlay {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.6); 
-            backdrop-filter: blur(6px); display: flex; flex-direction: column;
+            position: absolute; inset: 0; background: rgba(255,255,255,0.85); 
+            backdrop-filter: blur(4px); display: flex; flex-direction: column;
             justify-content: center; align-items: center; opacity: 0; transition: 0.3s;
         }
         .task-card:hover .lock-overlay { opacity: 1; }
-        .badge-price { background: var(--success); color: white; padding: 4px 12px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; display: inline-block; }
+        .badge-price { background: rgba(16, 185, 129, 0.1); color: var(--primary-hover); padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; display: inline-block; border: 1px solid rgba(16, 185, 129, 0.2); }
 
         /* Pricing Section */
-        #pricing { padding: 100px 8%; }
+        #pricing { padding: 100px 8%; background: white;}
         .package-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto; }
         .package-card { 
-            background: var(--glass); padding: 3rem 2rem; border-radius: 24px; 
-            border: 1px solid var(--glass-border); text-align: center;
+            background: var(--card-bg); padding: 3rem 2.5rem; border-radius: 20px; 
+            border: 1px solid var(--glass-border); text-align: left;
+            box-shadow: var(--shadow-md);
         }
-        .package-card.popular { border-color: var(--primary); background: rgba(139, 92, 246, 0.05); }
-        .price { font-size: 3.5rem; font-weight: 800; margin: 1.5rem 0; }
-        .price span { font-size: 1rem; color: var(--text-dim); }
-        .feat-list { list-style: none; margin-bottom: 2rem; text-align: left; }
-        .feat-list li { margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: var(--text-dim); font-size: 0.95rem; }
+        .package-card h3 { color: var(--text-main); font-size: 1.5rem;}
+        .package-card.popular { border-color: var(--primary); background: #ffffff; box-shadow: var(--shadow-float); position: relative;}
+        .price { font-size: 3.5rem; font-weight: 800; margin: 1.5rem 0; color: var(--text-main);}
+        .price span { font-size: 1rem; color: var(--text-dim); font-weight: 500;}
+        .feat-list { list-style: none; margin-bottom: 2.5rem; }
+        .feat-list li { margin-bottom: 16px; display: flex; align-items: center; gap: 12px; color: var(--text-dim); font-size: 1rem; font-weight: 500;}
 
         /* --- Auth Modal Styling --- */
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(12px); display: none;
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px); display: none;
             justify-content: center; align-items: center; z-index: 2000;
         }
 
         .modal-content {
             background: var(--card-bg); width: 95%; max-width: 440px;
-            padding: 2.5rem; border-radius: 28px; border: 1px solid var(--glass-border);
-            position: relative; animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 2.5rem; border-radius: 20px; border: 1px solid var(--glass-border);
+            position: relative; animation: modalPop 0.3s ease-out;
+            box-shadow: var(--shadow-float);
         }
 
-        @keyframes modalPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes modalPop { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .close-modal {
             position: absolute; top: 1.5rem; right: 1.5rem; background: none;
             border: none; color: var(--text-dim); font-size: 1.5rem; cursor: pointer;
+            transition: color 0.2s;
         }
+        .close-modal:hover { color: var(--text-main); }
 
         .auth-tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--glass-border); }
         .auth-tabs button {
-            background: none; border: none; color: var(--text-dim); padding: 10px 0;
-            cursor: pointer; font-weight: 600; flex: 1; border-bottom: 2px solid transparent;
+            background: none; border: none; color: var(--text-dim); padding: 12px 0;
+            cursor: pointer; font-weight: 700; flex: 1; border-bottom: 2px solid transparent;
+            font-size: 1rem;
         }
         .auth-tabs button.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-        .auth-form h2 { margin-bottom: 1.5rem; font-size: 1.5rem; }
+        .auth-form h2 { margin-bottom: 1.5rem; font-size: 1.5rem; color: var(--text-main); text-align: center;}
         .input-group {
-            background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
-            border-radius: 12px; padding: 12px 15px; display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;
+            background: var(--bg-color); border: 1px solid var(--glass-border);
+            border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;
+            transition: all 0.2s ease;
         }
-        .input-group input { background: none; border: none; color: white; width: 100%; outline: none; }
+        .input-group:focus-within {
+            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        .input-group i { color: var(--text-dim); }
+        .input-group:focus-within i { color: var(--primary); }
+        .input-group input { background: none; border: none; color: var(--text-main); width: 100%; outline: none; font-size: 1rem;}
+        .input-group input::placeholder { color: #94a3b8; }
 
-        .strength-container { height: 4px; background: #222; border-radius: 10px; margin-bottom: 5px; overflow: hidden; }
+        .strength-container { height: 6px; background: var(--glass-border); border-radius: 10px; margin-bottom: 5px; overflow: hidden; }
         #strengthBar { height: 100%; width: 0%; transition: 0.4s; background: #ef4444; }
-        #strengthText { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+        #strengthText { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 1.5rem; font-weight: 500;}
 
         .otp-input-wrapper input {
             width: 100%; text-align: center; letter-spacing: 12px; font-size: 1.8rem;
-            background: var(--glass); border: 1px solid var(--glass-border);
-            border-radius: 12px; padding: 15px; margin: 2rem 0; color: var(--primary); font-weight: 800;
+            background: var(--bg-color); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 15px; margin: 2rem 0; color: var(--text-main); font-weight: 800;
         }
 
         .auth-options { display: flex; justify-content: flex-end; margin-bottom: 1.5rem; }
-        .auth-options a { font-size: 0.85rem; color: var(--primary); text-decoration: none; }
-        .terms-check { display: flex; gap: 10px; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 1.5rem; cursor: pointer; }
+        .auth-options a { font-size: 0.9rem; color: var(--primary); text-decoration: none; font-weight: 600;}
+        .terms-check { display: flex; gap: 10px; font-size: 0.9rem; color: var(--text-dim); margin-bottom: 1.5rem; cursor: pointer; align-items: center;}
         .d-none { display: none !important; }
         .w-100 { width: 100%; }
 
         /* Custom Toast Notifications */
         .toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-            background: var(--card-bg); color: white; padding: 12px 24px; border-radius: 12px;
-            border: 1px solid var(--glass-border); z-index: 3000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-weight: 600; font-size: 0.9rem; pointer-events: none;
+            background: var(--text-main); color: white; padding: 14px 28px; border-radius: 10px;
+            box-shadow: var(--shadow-lg); z-index: 3000; transition: 0.4s ease;
+            font-weight: 600; font-size: 0.95rem; pointer-events: none;
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
-        .toast.success { border-left: 4px solid var(--success); }
-        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.success { background: var(--success); }
+        .toast.error { background: #ef4444; }
 
         /* Footer */
-        footer { background: #050507; padding: 80px 8% 40px; border-top: 1px solid var(--glass-border); }
-        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 4rem; margin-bottom: 60px; }
-        .footer-logo h3 { margin-bottom: 1.5rem; }
-        .footer-links h4 { margin-bottom: 1.5rem; color: var(--primary); font-size: 1rem; text-transform: uppercase; }
+        footer { background: #ffffff; padding: 80px 8% 40px; border-top: 1px solid var(--glass-border); }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 4rem; margin-bottom: 60px; max-width: 1200px; margin-left: auto; margin-right: auto;}
+        .footer-logo h3 { margin-bottom: 1.5rem; color: var(--text-main);}
+        .footer-links h4 { margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.1rem; font-weight: 700; }
         .footer-links ul { list-style: none; }
         .footer-links li { margin-bottom: 12px; }
-        .footer-links a { color: var(--text-dim); text-decoration: none; transition: 0.3s; font-size: 0.9rem; }
-        .footer-links a:hover { color: white; }
+        .footer-links a { color: var(--text-dim); text-decoration: none; transition: 0.3s; font-size: 0.95rem; font-weight: 500;}
+        .footer-links a:hover { color: var(--primary); }
 
         /* Mobile Adjustments */
         @media (max-width: 768px) {
@@ -347,31 +389,31 @@
                 left: 0; 
                 width: 100%; 
                 height: 100vh;
-                background: rgba(10, 10, 12, 0.98); 
+                background: rgba(255, 255, 255, 0.98); 
                 backdrop-filter: blur(20px);
                 flex-direction: column; 
                 justify-content: center;
                 align-items: center;
                 padding: 5rem 0; 
-                transition: 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+                transition: 0.4s ease;
                 z-index: 999;
                 display: flex;
                 gap: 2.5rem;
             }
             .nav-links.active { top: 0; }
-            .nav-links a { font-size: 1.5rem; font-weight: 600; }
+            .nav-links a { font-size: 1.5rem; font-weight: 700; color: var(--text-main);}
             .menu-toggle { display: block; }
-            .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .footer-grid { grid-template-columns: 1fr; gap: 2.5rem; }
             .hero-btns { flex-direction: column; width: 100%; }
             .btn-main, .btn-alt { width: 100%; justify-content: center; }
-            h1 { font-size: 3.2rem; }
+            h1 { font-size: 3rem; }
         }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="logo">Hunt<span>Job</span></div>
+        <div class="logo"><i data-lucide="briefcase" size="24" color="#10b981"></i> Hunt<span>Job</span></div>
         <div class="nav-links" id="navLinks">
             <a href="#how">How it Works</a>
             <a href="#tasks">Writing Tasks</a>
@@ -385,14 +427,14 @@
 
     <section class="hero">
         <div class="badge">
-            <i data-lucide="zap" size="16"></i> No.1 Writing Hub for Gen Z
+            <i data-lucide="shield-check" size="16"></i> Fully Escrow Protected
         </div>
         <h1>Hunt, Write & <br><span class="gradient-text">Secure the Bag</span></h1>
-        <p>The ultimate gig platform. Pick a writing task, submit your work, and get paid directly via M-Pesa. No complex interviews, just pure hustle.</p>
+        <p>The premium freelance marketplace built for fast execution, instant M-Pesa payouts, and verified high-ticket clients.</p>
         
         <div class="hero-btns">
             <button class="btn-main" id="heroGetStartedBtn">
-                Get Started <i data-lucide="chevron-right"></i>
+                Get Started <i data-lucide="arrow-right" size="18"></i>
             </button>
             <button class="btn-alt" onclick="location.href='#how'">How it works</button>
         </div>
@@ -435,29 +477,29 @@
         <div class="task-grid">
             <div class="task-card locked">
                 <div class="badge-price">KES 1,500</div>
-                <h3 style="margin-top:1.5rem;">Cryptocurrency Guide</h3>
-                <p style="font-size:0.9rem; color:var(--text-dim); margin-top:0.5rem;">Write an 800-word beginner's guide to Web3.</p>
+                <h3 style="margin-top:1.5rem; margin-bottom: 0.5rem;">Cryptocurrency Guide</h3>
+                <p style="font-size:0.95rem; color:var(--text-dim);">Write an 800-word beginner's guide to Web3.</p>
                 <div class="lock-overlay">
-                    <i data-lucide="lock" color="#8b5cf6"></i>
-                    <p style="font-weight:700; margin-top:10px;">Upgrade to Unlock</p>
+                    <i data-lucide="lock" color="#10b981" size="32"></i>
+                    <p style="font-weight:700; margin-top:10px; color: var(--text-main);">Upgrade to Unlock</p>
                 </div>
             </div>
             <div class="task-card locked">
                 <div class="badge-price">KES 2,200</div>
-                <h3 style="margin-top:1.5rem;">Product Review</h3>
-                <p style="font-size:0.9rem; color:var(--text-dim); margin-top:0.5rem;">Detailed review for a leading smartphone brand.</p>
+                <h3 style="margin-top:1.5rem; margin-bottom: 0.5rem;">Product Review</h3>
+                <p style="font-size:0.95rem; color:var(--text-dim);">Detailed review for a leading smartphone brand.</p>
                 <div class="lock-overlay">
-                    <i data-lucide="lock" color="#8b5cf6"></i>
-                    <p style="font-weight:700; margin-top:10px;">Upgrade to Unlock</p>
+                    <i data-lucide="lock" color="#10b981" size="32"></i>
+                    <p style="font-weight:700; margin-top:10px; color: var(--text-main);">Upgrade to Unlock</p>
                 </div>
             </div>
             <div class="task-card locked">
                 <div class="badge-price">KES 900</div>
-                <h3 style="margin-top:1.5rem;">Social Media Copy</h3>
-                <p style="font-size:0.9rem; color:var(--text-dim); margin-top:0.5rem;">Craft 10 engaging tweets for a startup.</p>
+                <h3 style="margin-top:1.5rem; margin-bottom: 0.5rem;">Social Media Copy</h3>
+                <p style="font-size:0.95rem; color:var(--text-dim);">Craft 10 engaging tweets for a startup.</p>
                 <div class="lock-overlay">
-                    <i data-lucide="lock" color="#8b5cf6"></i>
-                    <p style="font-weight:700; margin-top:10px;">Upgrade to Unlock</p>
+                    <i data-lucide="lock" color="#10b981" size="32"></i>
+                    <p style="font-weight:700; margin-top:10px; color: var(--text-main);">Upgrade to Unlock</p>
                 </div>
             </div>
         </div>
@@ -473,23 +515,23 @@
                 <h3>Starter Hunter</h3>
                 <div class="price">500<span> / One-time</span></div>
                 <ul class="feat-list">
-                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> Daily 2 Tasks</li>
-                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> Standard Payouts</li>
-                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> 5% Referral Bonus</li>
+                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> Daily 2 Tasks</li>
+                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> Standard Payouts</li>
+                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> 5% Referral Bonus</li>
                 </ul>
-                <button class="btn-alt" style="width:100%;">Get Started</button>
+                <button class="btn-alt" style="width:100%; border-radius: 10px;">Get Started</button>
             </div>
             <div class="package-card popular">
-                <div style="background:var(--primary); color:white; font-size:0.7rem; font-weight:800; padding:4px 12px; border-radius:20px; display:inline-block; margin-bottom:1rem;">MOST POPULAR</div>
+                <div style="background:var(--primary); color:white; font-size:0.75rem; font-weight:800; padding:6px 14px; border-radius:20px; display:inline-block; margin-bottom:1rem; position: absolute; top: -15px; left: 50%; transform: translateX(-50%);">MOST POPULAR</div>
                 <h3>Pro Hunter</h3>
                 <div class="price">1,500<span> / One-time</span></div>
                 <ul class="feat-list">
-                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> Unlimited Daily Tasks</li>
-                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> Instant M-Pesa Payouts</li>
-                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> 15% Referral Bonus</li>
-                    <li><i data-lucide="check-circle" size="18" color="#10b981"></i> Priority Support</li>
+                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> Unlimited Daily Tasks</li>
+                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> Instant M-Pesa Payouts</li>
+                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> 15% Referral Bonus</li>
+                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> Priority Support</li>
                 </ul>
-                <button class="btn-main" style="width:100%; border-radius:10px;">Select Pro</button>
+                <button class="btn-main" style="width:100%;">Select Pro</button>
             </div>
         </div>
     </section>
@@ -516,7 +558,7 @@
                 <div class="auth-options">
                     <a href="#" id="forgotPassBtn">Forgot Password?</a>
                 </div>
-                <button type="submit" class="btn-main w-100">Login to HuntJob</button>
+                <button type="submit" class="btn-main w-100" style="border-radius: 10px;">Login to HuntJob</button>
             </form>
 
             <form id="registerForm" class="auth-form d-none">
@@ -546,22 +588,22 @@
 
                 <label class="terms-check">
                     <input type="checkbox" id="termsCheck" required>
-                    <span>I agree to the <a href="#">User Agreement</a></span>
+                    <span>I agree to the <a href="#" style="color: var(--primary); text-decoration: none; font-weight: 600;">User Agreement</a></span>
                 </label>
-                <button type="submit" class="btn-main w-100" id="regSubmitBtn">Create Account & Verify</button>
+                <button type="submit" class="btn-main w-100" id="regSubmitBtn" style="border-radius: 10px;">Create Account & Verify</button>
             </form>
 
             <div id="otpSection" class="auth-form d-none">
                 <div style="text-align: center;">
-                    <i data-lucide="mail-check" size="48" color="#8b5cf6"></i>
+                    <i data-lucide="mail-check" size="48" color="#10b981" style="margin-bottom: 1rem;"></i>
                     <h2>Verify Your Email</h2>
-                    <p>We've sent a 6-digit code to your email. Check your inbox.</p>
+                    <p style="color: var(--text-dim); font-size: 0.95rem;">We've sent a 6-digit code to your email. Check your inbox.</p>
                 </div>
                 <div class="otp-input-wrapper">
                     <input type="text" id="otpCode" placeholder="0 0 0 0 0 0" maxlength="6">
                 </div>
-                <button class="btn-main w-100" id="verifyOtpBtn">Complete Registration</button>
-                <button class="btn-alt w-100" style="margin-top:10px; border:none;" id="resendOtp">Resend Code</button>
+                <button class="btn-main w-100" id="verifyOtpBtn" style="border-radius: 10px;">Complete Registration</button>
+                <button class="btn-alt w-100" style="margin-top:10px; border:none; background: transparent; box-shadow: none;" id="resendOtp">Resend Code</button>
             </div>
         </div>
     </div>
@@ -569,8 +611,8 @@
     <footer>
         <div class="footer-grid">
             <div class="footer-logo">
-                <div class="logo">Hunt<span>Job</span></div>
-                <p style="margin-top:1.5rem; font-size:0.9rem; color:var(--text-dim);">Empowering the next generation of digital writers in Kenya. Hunt tasks, write content, and grow your wallet.</p>
+                <div class="logo"><i data-lucide="briefcase" size="24" color="#10b981"></i> Hunt<span>Job</span></div>
+                <p style="margin-top:1.5rem; font-size:0.95rem; color:var(--text-dim); line-height: 1.6;">Empowering the next generation of digital freelancers in Kenya. Hunt tasks, submit work, and grow your wallet securely.</p>
             </div>
             <div class="footer-links">
                 <h4>Platform</h4>
@@ -597,7 +639,7 @@
                 </ul>
             </div>
         </div>
-        <div style="text-align:center; padding-top:40px; border-top:1px solid var(--glass-border); color:var(--text-dim); font-size:0.8rem;">
+        <div style="text-align:center; padding-top:40px; border-top:1px solid var(--glass-border); color:var(--text-dim); font-size:0.9rem;">
             &copy; 2026 HuntJob Kenya. All Rights Reserved.
         </div>
     </footer>
