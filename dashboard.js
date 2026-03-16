@@ -239,7 +239,8 @@ function updateUIVisuals(data) {
     if (refLinkEl && data.uid) {
         let baseUrl = window.location.origin + window.location.pathname.replace('dashboard.html', '');
         if (!baseUrl.endsWith('/')) baseUrl += '/';
-        refLinkEl.innerText = `${baseUrl}index.html?ref=${data.uid}`;
+        // REMOVED index.html for a cleaner look
+        refLinkEl.innerText = `${baseUrl}?ref=${data.uid}`;
     }
 }
 
