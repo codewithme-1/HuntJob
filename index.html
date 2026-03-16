@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HuntJob | Hunt, Write, Secure the Bag</title>
+    <title>HuntJob | We Bring The Market To You</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -80,6 +80,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            text-decoration: none;
         }
 
         .logo span {
@@ -133,7 +134,7 @@
 
         /* Hero Section */
         .hero {
-            min-height: 90vh;
+            min-height: 80vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -158,7 +159,7 @@
         }
 
         h1 {
-            font-size: clamp(2.8rem, 8vw, 4.5rem);
+            font-size: clamp(2.5rem, 8vw, 4.8rem);
             font-weight: 800;
             line-height: 1.1;
             letter-spacing: -1.5px;
@@ -180,6 +181,8 @@
         .hero-btns {
             display: flex;
             gap: 1.2rem;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .btn-main {
@@ -222,38 +225,104 @@
             border-color: #cbd5e1;
         }
 
+        /* Demo Video Section */
+        .demo-video-wrapper {
+            max-width: 900px;
+            margin: 0 auto 100px;
+            padding: 0 5%;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--glass-border);
+            background: #0f172a;
+        }
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         /* Section Header */
-        .section-header { text-align: center; margin-bottom: 4rem; }
-        .section-header h2 { font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-main); letter-spacing: -1px;}
-        .section-header p { color: var(--text-dim); font-size: 1.1rem;}
+        .section-header { text-align: center; margin-bottom: 3rem; }
+        .section-header h2 { font-size: clamp(2rem, 5vw, 2.5rem); margin-bottom: 1rem; color: var(--text-main); letter-spacing: -1px;}
+        .section-header p { color: var(--text-dim); font-size: 1.1rem; max-width: 600px; margin: 0 auto;}
 
-        /* Card Hover Effects */
-        .process-card, .task-card, .package-card {
-            transition: all 0.3s ease;
-            cursor: pointer;
+        /* Foundation / About Story Section */
+        #about { padding: 100px 5%; background: var(--bg-color); }
+        .about-layout {
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 3rem;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-sm);
+        }
+        .about-image {
+            flex: 1;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-color);
+            height: 400px;
+        }
+        .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .about-text {
+            flex: 1;
+            text-align: left;
+        }
+        .about-text h2 {
+            font-size: clamp(2rem, 4vw, 2.5rem);
+            color: var(--text-main);
+            margin-bottom: 1.2rem;
+            letter-spacing: -1px;
+            line-height: 1.2;
+        }
+        .about-text p {
+            color: var(--text-dim);
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
         }
 
-        .process-card:hover, .task-card:hover, .package-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-float);
-            border-color: rgba(16, 185, 129, 0.3);
-        }
-
-        /* Process Section */
-        .process { padding: 100px 8%; text-align: center; background: white; }
+        /* How It Works (Process Section) */
+        .process { padding: 100px 5%; text-align: center; background: white; }
         .process-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 2rem;
             max-width: 1200px;
             margin: 0 auto;
         }
         .process-card {
             background: var(--bg-color);
-            padding: 2.5rem;
+            padding: 2.5rem 2rem;
             border-radius: 16px;
             border: 1px solid var(--glass-border);
             text-align: left;
+            transition: all 0.3s ease;
+        }
+        .process-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-float);
+            border-color: rgba(16, 185, 129, 0.3);
         }
         .step-num {
             width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); 
@@ -261,41 +330,71 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: 800; font-size: 1.2rem; margin-bottom: 1.5rem;
         }
-        .process-card h3 { color: var(--text-main); margin-bottom: 10px;}
+        .process-card h3 { color: var(--text-main); margin-bottom: 10px; font-size: 1.2rem;}
         .process-card p { color: var(--text-dim); font-size: 0.95rem; }
 
+        /* Upwork-Style Categories Section */
+        #categories { padding: 100px 5%; background: var(--bg-color); }
+        .upwork-cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
+        .upwork-cat-card { background: white; border: 1px solid var(--glass-border); border-radius: 12px; padding: 2rem 1.5rem; transition: 0.2s ease; text-align: left; display: flex; flex-direction: column; gap: 1.2rem; cursor: pointer; text-decoration: none; box-shadow: var(--shadow-sm); }
+        .upwork-cat-card:hover { background: #f8fafc; border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-3px);}
+        .upwork-cat-icon { color: var(--primary); display: flex; align-items: center; }
+        .upwork-cat-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.3px;}
+
         /* Jobs Showcase */
-        #tasks { padding: 100px 8%; background: var(--bg-color); }
-        .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto;}
+        #tasks { padding: 100px 5%; background: white; }
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto;}
         .task-card { 
-            background: var(--card-bg); padding: 2rem; border-radius: 16px; 
+            background: var(--bg-color); padding: 2rem; border-radius: 16px; 
             border: 1px solid var(--glass-border); position: relative; overflow: hidden;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-sm); transition: 0.3s; cursor: pointer;
         }
-        .task-card h3 { color: var(--text-main); }
-        .task-card.locked { opacity: 0.9; }
+        .task-card h3 { color: var(--text-main); font-size: 1.2rem;}
+        .task-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-float); border-color: rgba(16, 185, 129, 0.3);}
+        .task-card.locked { opacity: 0.9; filter: grayscale(0.5);}
         .lock-overlay {
             position: absolute; inset: 0; background: rgba(255,255,255,0.85); 
             backdrop-filter: blur(4px); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; opacity: 0; transition: 0.3s;
+            justify-content: center; align-items: center; opacity: 0; transition: 0.3s; padding: 2rem; text-align: center;
         }
         .task-card:hover .lock-overlay { opacity: 1; }
         .badge-price { background: rgba(16, 185, 129, 0.1); color: var(--primary-hover); padding: 6px 12px; border-radius: 6px; font-weight: 800; font-size: 0.85rem; display: inline-block; border: 1px solid rgba(16, 185, 129, 0.2); }
 
-        /* Pricing Section */
-        #pricing { padding: 100px 8%; background: white;}
-        .package-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto; }
-        .package-card { 
-            background: var(--card-bg); padding: 3rem 2.5rem; border-radius: 20px; 
-            border: 1px solid var(--glass-border); text-align: left;
-            box-shadow: var(--shadow-md);
-        }
-        .package-card h3 { color: var(--text-main); font-size: 1.5rem;}
-        .package-card.popular { border-color: var(--primary); background: #ffffff; box-shadow: var(--shadow-float); position: relative;}
-        .price { font-size: 3.5rem; font-weight: 800; margin: 1.5rem 0; color: var(--text-main);}
-        .price span { font-size: 1rem; color: var(--text-dim); font-weight: 500;}
-        .feat-list { list-style: none; margin-bottom: 2.5rem; }
-        .feat-list li { margin-bottom: 16px; display: flex; align-items: center; gap: 12px; color: var(--text-dim); font-size: 1rem; font-weight: 500;}
+        /* Auto-Scrolling Testimonials */
+        #testimonials { padding: 100px 0; background: var(--bg-color); }
+        .scrolling-test-wrapper { overflow: hidden; white-space: nowrap; position: relative; width: 100%; padding: 1rem 0; }
+        .scrolling-test-wrapper::before, .scrolling-test-wrapper::after { content: ""; position: absolute; top: 0; width: 50px; height: 100%; z-index: 2; pointer-events: none;}
+        .scrolling-test-wrapper::before { left: 0; background: linear-gradient(to right, var(--bg-color), transparent); }
+        .scrolling-test-wrapper::after { right: 0; background: linear-gradient(to left, var(--bg-color), transparent); }
+        
+        .scrolling-test-track { display: inline-flex; gap: 1.5rem; animation: scrollLeftTest 40s linear infinite; padding-left: 1.5rem; }
+        .scrolling-test-track:hover { animation-play-state: paused; }
+        @keyframes scrollLeftTest { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        
+        .test-card { white-space: normal; width: 85vw; max-width: 380px; flex-shrink: 0; background: white; padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-sm); position: relative; text-align: left;}
+        .test-card::before { content: '"'; position: absolute; top: 10px; right: 20px; font-size: 4rem; color: rgba(16, 185, 129, 0.1); font-family: Georgia, serif; line-height: 1;}
+        
+        .user-profile { display: flex; align-items: center; gap: 12px; margin-bottom: 1.2rem;}
+        .user-avatar { width: 45px; height: 45px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem;}
+        .user-info h4 { font-size: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 6px; margin-bottom: 2px;}
+        .user-info p { font-size: 0.8rem; color: var(--text-dim); margin: 0;}
+        .stars { color: #f59e0b; margin-bottom: 12px; display: flex; gap: 2px;}
+        .test-card p.review { font-size: 0.95rem; color: #334155; line-height: 1.6; font-style: italic;}
+
+        /* FAQ Section */
+        #faq { padding: 100px 5%; background: white; }
+        .faq-container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem;}
+        .faq-item { border: 1px solid var(--glass-border); border-radius: 12px; background: var(--bg-color); overflow: hidden; transition: all 0.3s ease;}
+        .faq-question { padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; color: var(--text-main); font-size: 1rem;}
+        .faq-icon { color: var(--primary); transition: transform 0.3s ease;}
+        .faq-answer { padding: 0 1.5rem; max-height: 0; opacity: 0; transition: all 0.3s ease; color: var(--text-dim); font-size: 0.95rem; line-height: 1.6;}
+        .faq-item.active { border-color: rgba(16, 185, 129, 0.3); box-shadow: var(--shadow-sm); background: white;}
+        .faq-item.active .faq-icon { transform: rotate(180deg); }
+        .faq-item.active .faq-answer { padding: 0 1.5rem 1.5rem; max-height: 500px; opacity: 1; }
+
+        /* Floating WhatsApp Widget */
+        .whatsapp-float { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; box-shadow: var(--shadow-float); z-index: 1000; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.3s ease;}
+        .whatsapp-float:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(37, 211, 102, 0.4);}
 
         /* --- Auth Modal Styling --- */
         .modal-overlay {
@@ -372,17 +471,18 @@
         .toast.error { background: #ef4444; }
 
         /* Footer */
-        footer { background: #ffffff; padding: 80px 8% 40px; border-top: 1px solid var(--glass-border); }
-        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 4rem; margin-bottom: 60px; max-width: 1200px; margin-left: auto; margin-right: auto;}
+        footer { background: #ffffff; padding: 60px 5% 30px; border-top: 1px solid var(--glass-border); }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 40px; max-width: 1200px; margin-left: auto; margin-right: auto;}
         .footer-logo h3 { margin-bottom: 1.5rem; color: var(--text-main);}
-        .footer-links h4 { margin-bottom: 1.5rem; color: var(--text-main); font-size: 1.1rem; font-weight: 700; }
+        .footer-links h4 { margin-bottom: 1.2rem; color: var(--text-main); font-size: 1rem; font-weight: 700; }
         .footer-links ul { list-style: none; }
-        .footer-links li { margin-bottom: 12px; }
-        .footer-links a { color: var(--text-dim); text-decoration: none; transition: 0.3s; font-size: 0.95rem; font-weight: 500;}
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { color: var(--text-dim); text-decoration: none; transition: 0.3s; font-size: 0.9rem; font-weight: 500;}
         .footer-links a:hover { color: var(--primary); }
 
         /* Mobile Adjustments */
         @media (max-width: 768px) {
+            .navbar { padding: 1rem 5%; }
             .nav-links { 
                 position: fixed; 
                 top: -100vh; 
@@ -395,7 +495,7 @@
                 justify-content: center;
                 align-items: center;
                 padding: 5rem 0; 
-                transition: 0.4s ease;
+                transition: 0.4s cubic-bezier(0.77, 0, 0.175, 1);
                 z-index: 999;
                 display: flex;
                 gap: 2.5rem;
@@ -403,138 +503,275 @@
             .nav-links.active { top: 0; }
             .nav-links a { font-size: 1.5rem; font-weight: 700; color: var(--text-main);}
             .menu-toggle { display: block; }
-            .footer-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+            
+            .about-layout { flex-direction: column; gap: 2rem; padding: 2rem; }
+            .about-image { height: 250px; }
+            
+            .footer-grid { grid-template-columns: 1fr; gap: 2rem; text-align: center;}
+            .footer-logo { display: flex; flex-direction: column; align-items: center;}
+            
             .hero-btns { flex-direction: column; width: 100%; }
             .btn-main, .btn-alt { width: 100%; justify-content: center; }
-            h1 { font-size: 3rem; }
+            
+            .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; }
         }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="logo"><i data-lucide="briefcase" size="24" color="#10b981"></i> Hunt<span>Job</span></div>
+        <a href="#" class="logo"><i data-lucide="briefcase" size="24" color="#10b981"></i> Hunt<span>Job</span></a>
         <div class="nav-links" id="navLinks">
+            <a href="#about">About</a>
             <a href="#how">How it Works</a>
-            <a href="#tasks">Writing Tasks</a>
-            <a href="#pricing">Packages</a>
+            <a href="#categories">Categories</a>
+            <a href="#testimonials">Stories</a>
+            <a href="#faq">FAQ</a>
             <button class="btn-nav" id="navRegisterBtn">Get Started</button>
         </div>
         <button class="menu-toggle" id="menuToggle">
-            <i data-lucide="menu"></i>
+            <i data-lucide="menu" size="28"></i>
         </button>
     </nav>
 
     <section class="hero">
         <div class="badge">
-            <i data-lucide="shield-check" size="16"></i> Fully Escrow Protected
+            <i data-lucide="shield-check" size="16"></i> Fully Escrow Protected Market
         </div>
-        <h1>Hunt, Write & <br><span class="gradient-text">Secure the Bag</span></h1>
-        <p>The premium freelance marketplace built for fast execution, instant M-Pesa payouts, and verified high-ticket clients.</p>
+        <h1>We Bring The Market <br><span class="gradient-text">To You.</span></h1>
+        <p>The premium freelance marketplace for Kenyans. Stop hunting for clients—claim pre-funded tasks, submit your work, and withdraw instantly to M-Pesa.</p>
         
         <div class="hero-btns">
             <button class="btn-main" id="heroGetStartedBtn">
-                Get Started <i data-lucide="arrow-right" size="18"></i>
+                Create Free Account <i data-lucide="arrow-right" size="18"></i>
             </button>
-            <button class="btn-alt" onclick="location.href='#how'">How it works</button>
+            <button class="btn-alt" onclick="document.getElementById('how').scrollIntoView({behavior: 'smooth'})">How the Market Works</button>
+        </div>
+    </section>
+
+    <div class="demo-video-wrapper">
+        <div class="video-container">
+            <video autoplay loop muted playsinline>
+                <source src="herohunt.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <section id="about">
+        <div class="about-layout">
+            <div class="about-image">
+                <img src="heroimage.jpeg" alt="African freelancer working focused on a laptop">
+            </div>
+            <div class="about-text">
+                <h2>Built by Hustlers, <br>For Hustlers.</h2>
+                <p>It started with a simple frustration. We saw brilliant Kenyan talent fighting for scraps on crowded global platforms. You'd win a gig, execute perfectly, and then wait 14 days just to lose 10% to foreign payment processors.</p>
+                <p>We knew there had to be a better way. We built HuntJob to aggregate high-value contracts, cap the competition, and integrate directly with M-Pesa. No more bidding against thousands of bots. No more payment delays. Just pure execution and instant liquidity.</p>
+            </div>
         </div>
     </section>
 
     <section class="process" id="how">
         <div class="section-header">
-            <h2>Get Paid in 4 Simple Steps</h2>
-            <p>Your journey from hunter to earner starts here.</p>
+            <h2>The HuntJob Process</h2>
+            <p>We source the jobs, lock the funds in escrow, and bring them directly to your dashboard.</p>
         </div>
         <div class="process-grid">
             <div class="process-card">
                 <div class="step-num">1</div>
-                <h3>Register</h3>
-                <p>Create your Hunter account and agree to our community terms.</p>
+                <h3>Register Account</h3>
+                <p>Create your verified Hunter profile and access the live market board immediately.</p>
             </div>
             <div class="process-card">
                 <div class="step-num">2</div>
-                <h3>Pick a Package</h3>
-                <p>Unlock premium high-paying tasks by selecting a hustle tier.</p>
+                <h3>Browse & Bid</h3>
+                <p>Find tasks matching your skills. The client's budget is locked in escrow before you even start.</p>
             </div>
             <div class="process-card">
                 <div class="step-num">3</div>
-                <h3>Complete Tasks</h3>
-                <p>Choose writing jobs that fit your style and submit before the deadline.</p>
+                <h3>Execute & Submit</h3>
+                <p>Complete the work and submit your Google Doc or link directly through the platform.</p>
             </div>
             <div class="process-card">
                 <div class="step-num">4</div>
-                <h3>Withdraw</h3>
-                <p>Once approved, move your earnings directly to your mobile wallet.</p>
+                <h3>Instant M-Pesa</h3>
+                <p>Once approved, the funds are released. Withdraw instantly via STK push. No 14-day waits.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="categories">
+        <div class="section-header">
+            <h2>Find tasks for every type of work</h2>
+            <p>We aggregate the most profitable freelance requests into one centralized market.</p>
+        </div>
+        <div class="upwork-cat-grid">
+            <div class="upwork-cat-card">
+                <div class="upwork-cat-icon"><i data-lucide="bot" size="32"></i></div>
+                <div class="upwork-cat-title">AI Services</div>
+            </div>
+            <div class="upwork-cat-card">
+                <div class="upwork-cat-icon"><i data-lucide="code" size="32"></i></div>
+                <div class="upwork-cat-title">Development & IT</div>
+            </div>
+            <div class="upwork-cat-card">
+                <div class="upwork-cat-icon"><i data-lucide="palette" size="32"></i></div>
+                <div class="upwork-cat-title">Design & Creative</div>
+            </div>
+            <div class="upwork-cat-card">
+                <div class="upwork-cat-icon"><i data-lucide="trending-up" size="32"></i></div>
+                <div class="upwork-cat-title">Sales & Marketing</div>
+            </div>
+            <div class="upwork-cat-card">
+                <div class="upwork-cat-icon"><i data-lucide="pen-tool" size="32"></i></div>
+                <div class="upwork-cat-title">Writing & Translation</div>
+            </div>
+            <div class="upwork-cat-card">
+                <div class="upwork-cat-icon"><i data-lucide="headset" size="32"></i></div>
+                <div class="upwork-cat-title">Admin & Support</div>
+            </div>
+            <div class="upwork-cat-card">
+                <div class="upwork-cat-icon"><i data-lucide="building-2" size="32"></i></div>
+                <div class="upwork-cat-title">Finance & Accounting</div>
+            </div>
+            <div class="upwork-cat-card">
+                <div class="upwork-cat-icon"><i data-lucide="scale" size="32"></i></div>
+                <div class="upwork-cat-title">Legal</div>
             </div>
         </div>
     </section>
 
     <section id="tasks">
         <div class="section-header">
-            <h2>Latest Writing Hustles</h2>
-            <p>Don't let these opportunities slide. Upgrade to claim them.</p>
+            <h2>Live Market Sneak Peek</h2>
+            <p>Contracts actively waiting for execution on the HuntJob board.</p>
         </div>
         <div class="task-grid">
-            <div class="task-card locked">
+            <div class="task-card">
                 <div class="badge-price">KES 1,500</div>
-                <h3 style="margin-top:1.5rem; margin-bottom: 0.5rem;">Cryptocurrency Guide</h3>
-                <p style="font-size:0.95rem; color:var(--text-dim);">Write an 800-word beginner's guide to Web3.</p>
-                <div class="lock-overlay">
-                    <i data-lucide="lock" color="#10b981" size="32"></i>
-                    <p style="font-weight:700; margin-top:10px; color: var(--text-main);">Upgrade to Unlock</p>
-                </div>
+                <h3 style="margin-top:1.5rem; margin-bottom: 0.5rem;">Tech Resume Rewrite</h3>
+                <p style="font-size:0.95rem; color:var(--text-dim);">Reformat and optimize a software engineer's CV for ATS software.</p>
             </div>
-            <div class="task-card locked">
+            <div class="task-card">
                 <div class="badge-price">KES 2,200</div>
-                <h3 style="margin-top:1.5rem; margin-bottom: 0.5rem;">Product Review</h3>
-                <p style="font-size:0.95rem; color:var(--text-dim);">Detailed review for a leading smartphone brand.</p>
-                <div class="lock-overlay">
-                    <i data-lucide="lock" color="#10b981" size="32"></i>
-                    <p style="font-weight:700; margin-top:10px; color: var(--text-main);">Upgrade to Unlock</p>
-                </div>
+                <h3 style="margin-top:1.5rem; margin-bottom: 0.5rem;">Web3 Blog Article</h3>
+                <p style="font-size:0.95rem; color:var(--text-dim);">Write a 1,000-word piece on the future of decentralized finance.</p>
             </div>
-            <div class="task-card locked">
+            <div class="task-card">
                 <div class="badge-price">KES 900</div>
-                <h3 style="margin-top:1.5rem; margin-bottom: 0.5rem;">Social Media Copy</h3>
-                <p style="font-size:0.95rem; color:var(--text-dim);">Craft 10 engaging tweets for a startup.</p>
-                <div class="lock-overlay">
-                    <i data-lucide="lock" color="#10b981" size="32"></i>
-                    <p style="font-weight:700; margin-top:10px; color: var(--text-main);">Upgrade to Unlock</p>
+                <h3 style="margin-top:1.5rem; margin-bottom: 0.5rem;">Custom Cover Letter</h3>
+                <p style="font-size:0.95rem; color:var(--text-dim);">Craft a targeted cover letter for a marketing manager position.</p>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 3rem;">
+            <button class="btn-main" style="margin: 0 auto;" onclick="document.getElementById('navRegisterBtn').click()">Unlock the Market <i data-lucide="lock-open" size="18"></i></button>
+        </div>
+    </section>
+
+    <section id="testimonials">
+        <div class="section-header">
+            <h2>Hunters Securing The Bag</h2>
+            <p>Real feedback from users executing contracts on the HuntJob platform.</p>
+        </div>
+        <div class="scrolling-test-wrapper">
+            <div class="scrolling-test-track">
+                <div class="test-card">
+                    <div class="user-profile">
+                        <div class="user-avatar">BM</div>
+                        <div class="user-info">
+                            <h4>Brian M. <span style="font-size:1.2rem;">🇰🇪</span></h4>
+                            <p>Resume Writer</p>
+                        </div>
+                    </div>
+                    <div class="stars">
+                        <i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i>
+                    </div>
+                    <p class="review">"Picked up a KES 1,500 resume rewrite on Tuesday, got it approved Wednesday morning. The money hit my M-Pesa 2 seconds after I clicked withdraw. Super solid platform."</p>
+                </div>
+                <div class="test-card">
+                    <div class="user-profile">
+                        <div class="user-avatar" style="background: var(--secondary);">SW</div>
+                        <div class="user-info">
+                            <h4>Sarah W. <span style="font-size:1.2rem;">🇰🇪</span></h4>
+                            <p>Technical Blogger</p>
+                        </div>
+                    </div>
+                    <div class="stars">
+                        <i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i>
+                    </div>
+                    <p class="review">"The escrow feature gives me absolute peace of mind. I know the client's money is locked in the system before I even type a single word for my Web3 articles."</p>
+                </div>
+                <div class="test-card">
+                    <div class="user-profile">
+                        <div class="user-avatar" style="background: #f59e0b;">DK</div>
+                        <div class="user-info">
+                            <h4>David K. <span style="font-size:1.2rem;">🇰🇪</span></h4>
+                            <p>Copywriter</p>
+                        </div>
+                    </div>
+                    <div class="stars">
+                        <i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i>
+                    </div>
+                    <p class="review">"I love that there are no bidding wars against 500 other people. The task caps mean if I bid on a cover letter job, I actually have a real chance of winning it."</p>
+                </div>
+                <div class="test-card">
+                    <div class="user-profile">
+                        <div class="user-avatar">BM</div>
+                        <div class="user-info">
+                            <h4>Brian M. <span style="font-size:1.2rem;">🇰🇪</span></h4>
+                            <p>Resume Writer</p>
+                        </div>
+                    </div>
+                    <div class="stars">
+                        <i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i>
+                    </div>
+                    <p class="review">"Picked up a KES 1,500 resume rewrite on Tuesday, got it approved Wednesday morning. The money hit my M-Pesa 2 seconds after I clicked withdraw. Super solid platform."</p>
+                </div>
+                <div class="test-card">
+                    <div class="user-profile">
+                        <div class="user-avatar" style="background: var(--secondary);">SW</div>
+                        <div class="user-info">
+                            <h4>Sarah W. <span style="font-size:1.2rem;">🇰🇪</span></h4>
+                            <p>Technical Blogger</p>
+                        </div>
+                    </div>
+                    <div class="stars">
+                        <i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i><i data-lucide="star" size="16" style="fill:currentColor"></i>
+                    </div>
+                    <p class="review">"The escrow feature gives me absolute peace of mind. I know the client's money is locked in the system before I even type a single word for my Web3 articles."</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="pricing">
+    <section id="faq">
         <div class="section-header">
-            <h2>Select Your Hustle Tier</h2>
-            <p>One-time activation fee. Lifetime access to writing tasks.</p>
+            <h2>Common Questions</h2>
+            <p>Everything you need to know about the market.</p>
         </div>
-        <div class="package-grid">
-            <div class="package-card">
-                <h3>Starter Hunter</h3>
-                <div class="price">500<span> / One-time</span></div>
-                <ul class="feat-list">
-                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> Daily 2 Tasks</li>
-                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> Standard Payouts</li>
-                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> 5% Referral Bonus</li>
-                </ul>
-                <button class="btn-alt" style="width:100%; border-radius: 10px;">Get Started</button>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">How does HuntJob protect my payments? <i data-lucide="chevron-down" class="faq-icon"></i></div>
+                <div class="faq-answer">Every task listed on our market is pre-funded. The client's money is held securely in escrow. When your submitted work is approved, the funds are instantly released to your withdrawable balance. You never work for free.</div>
             </div>
-            <div class="package-card popular">
-                <div style="background:var(--primary); color:white; font-size:0.75rem; font-weight:800; padding:6px 14px; border-radius:20px; display:inline-block; margin-bottom:1rem; position: absolute; top: -15px; left: 50%; transform: translateX(-50%);">MOST POPULAR</div>
-                <h3>Pro Hunter</h3>
-                <div class="price">1,500<span> / One-time</span></div>
-                <ul class="feat-list">
-                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> Unlimited Daily Tasks</li>
-                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> Instant M-Pesa Payouts</li>
-                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> 15% Referral Bonus</li>
-                    <li><i data-lucide="check-circle" size="20" color="#10b981"></i> Priority Support</li>
-                </ul>
-                <button class="btn-main" style="width:100%;">Select Pro</button>
+            <div class="faq-item">
+                <div class="faq-question">How fast are withdrawals processed? <i data-lucide="chevron-down" class="faq-icon"></i></div>
+                <div class="faq-answer">Instant. We use the M-Pesa STK push and B2C API. Once you hit the withdraw button on your dashboard, the funds hit your registered mobile wallet in seconds. No waiting 14 days like other platforms.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Do I have to pay to access jobs? <i data-lucide="chevron-down" class="faq-icon"></i></div>
+                <div class="faq-answer">Creating an account is free. To bid on tasks, you use Tokens. You can activate specific Hunter Tiers inside the dashboard to unlock free daily tokens, lower competition, and access to premium, high-budget technical contracts.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Where do these jobs come from? <i data-lucide="chevron-down" class="faq-icon"></i></div>
+                <div class="faq-answer">We bring the market to you. Our platform aggregates high-demand requests from global freelance sites, local agencies, and direct B2B startups, centralizing them onto one easy-to-use Kenyan platform.</div>
             </div>
         </div>
     </section>
+
+    <a href="https://wa.me/254743611394" class="whatsapp-float" target="_blank" aria-label="Chat with Admin">
+        <i data-lucide="message-circle" size="32"></i>
+    </a>
 
     <div id="authModal" class="modal-overlay">
         <div class="modal-content">
@@ -588,7 +825,7 @@
 
                 <label class="terms-check">
                     <input type="checkbox" id="termsCheck" required>
-                    <span>I agree to the <a href="#" style="color: var(--primary); text-decoration: none; font-weight: 600;">User Agreement</a></span>
+                    <span>I agree to the <a href="terms.html" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 600;">Terms & Conditions</a></span>
                 </label>
                 <button type="submit" class="btn-main w-100" id="regSubmitBtn" style="border-radius: 10px;">Create Account & Verify</button>
             </form>
@@ -617,29 +854,29 @@
             <div class="footer-links">
                 <h4>Platform</h4>
                 <ul>
+                    <li><a href="#about">About</a></li>
                     <li><a href="#how">How it Works</a></li>
-                    <li><a href="#tasks">Hustles</a></li>
-                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#categories">Market Categories</a></li>
                 </ul>
             </div>
             <div class="footer-links">
                 <h4>Support</h4>
                 <ul>
                     <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="terms.html" target="_blank">Terms & Conditions</a></li>
+                    <li><a href="privacy.html" target="_blank">Privacy Policy</a></li>
                 </ul>
             </div>
             <div class="footer-links">
                 <h4>Community</h4>
                 <ul>
-                    <li><a href="#">WhatsApp Group</a></li>
-                    <li><a href="#">Refer & Earn</a></li>
-                    <li><a href="#">Success Stories</a></li>
+                    <li><a href="https://wa.me/254743611394" target="_blank">WhatsApp Channel</a></li>
+                    <li><a href="#" onclick="document.getElementById('navRegisterBtn').click()">Refer & Earn</a></li>
+                    <li><a href="#testimonials">Success Stories</a></li>
                 </ul>
             </div>
         </div>
-        <div style="text-align:center; padding-top:40px; border-top:1px solid var(--glass-border); color:var(--text-dim); font-size:0.9rem;">
+        <div style="text-align:center; padding-top:30px; border-top:1px solid var(--glass-border); color:var(--text-dim); font-size:0.9rem;">
             &copy; 2026 HuntJob Kenya. All Rights Reserved.
         </div>
     </footer>
@@ -655,6 +892,39 @@
                 document.getElementById('authModal').style.display = 'flex';
                 document.getElementById('registerTabBtn').click();
             }
+
+            // FAQ Accordion
+            document.querySelectorAll('.faq-question').forEach(button => {
+                button.addEventListener('click', () => {
+                    const item = button.parentElement;
+                    const isActive = item.classList.contains('active');
+                    
+                    // Close all others
+                    document.querySelectorAll('.faq-item').forEach(faq => {
+                        faq.classList.remove('active');
+                    });
+
+                    // Toggle current
+                    if (!isActive) {
+                        item.classList.add('active');
+                    }
+                });
+            });
+
+            // Mobile Menu Toggle Logic
+            const menuToggle = document.getElementById('menuToggle');
+            const navLinks = document.getElementById('navLinks');
+            
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+
+            // Close mobile menu when a link is clicked
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                });
+            });
         });
     </script>
     <script src="app.js"></script>
