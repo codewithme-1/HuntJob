@@ -237,10 +237,8 @@ function updateUIVisuals(data) {
 
     const refLinkEl = document.getElementById('refLinkText');
     if (refLinkEl && data.uid) {
-        let baseUrl = window.location.origin + window.location.pathname.replace('dashboard.html', '');
-        if (!baseUrl.endsWith('/')) baseUrl += '/';
-        // REMOVED index.html for a cleaner look
-        refLinkEl.innerText = `${baseUrl}?ref=${data.uid}`;
+        // Force the working www URL
+        refLinkEl.innerText = `https://www.huntjobs.co.ke/?ref=${data.uid}`;
     }
 }
 
