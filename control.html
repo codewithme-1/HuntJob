@@ -42,10 +42,23 @@
         }
         .login-box button:hover { background: var(--primary-hover); }
 
+        /* Mobile Header & Overlay (Hidden on Desktop) */
+        .sidebar-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px);
+            z-index: 999; display: none; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        .mobile-header {
+            display: none; padding: 15px 20px; background: var(--card); border-bottom: 1px solid var(--border);
+            align-items: center; justify-content: space-between; z-index: 998;
+        }
+        .mobile-menu-btn { background: transparent; border: none; color: var(--text-main); cursor: pointer; display: flex; align-items: center; }
+
         /* Layout */
         .sidebar {
             width: 260px; background: var(--card); border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; padding: 20px 0;
+            display: flex; flex-direction: column; padding: 20px 0; z-index: 1000;
+            transition: transform 0.3s ease;
         }
         .logo { padding: 0 20px 20px; font-size: 1.5rem; font-weight: 800; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
         .logo span { color: var(--primary); }
@@ -112,6 +125,30 @@
         .chat-admin { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
         .chat-time { display: block; font-size: 0.65rem; opacity: 0.7; margin-top: 5px; text-align: right; }
 
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .mobile-header { display: flex; }
+            .sidebar {
+                position: fixed; top: 0; left: 0; height: 100vh;
+                transform: translateX(-100%); box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+            }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { padding: 15px; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; margin-bottom: 20px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            
+            /* Make search bars stack and fill width */
+            .search-row { flex-direction: column; gap: 10px; }
+            .search-bar { width: 100% !important; flex: 1; }
+            
+            /* Stack modal elements */
+            .modal-content { width: 95%; padding: 15px; }
+            .modal-content [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+            .modal-content [style*="display: flex; gap: 10px"] { flex-direction: column; }
+            .modal-content [style*="display: flex; justify-content: space-between"] { flex-direction: column; gap: 10px; align-items: flex-start;}
+        }
+
     </style>
 </head>
 <body>
@@ -123,6 +160,12 @@
             <button onclick="loginAdmin()" id="loginBtn">Authenticate</button>
             <p id="loginError" style="color:var(--danger); margin-top:15px; font-size:0.9rem; display:none;">Access Denied.</p>
         </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="mobile-header">
+        <div class="logo" style="margin: 0; padding: 0; border: none;">Hunt<span>Job</span> Admin</div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i data-lucide="menu" size="28"></i></button>
     </div>
 
     <nav class="sidebar">
@@ -180,7 +223,7 @@
                 <h1 class="page-title">Job Management</h1>
                 <button class="btn-sm btn-primary" onclick="openPostJobModal()"><i data-lucide="plus-circle" size="16"></i> Post New Job</button> 
             </div>
-            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+            <div class="search-row" style="display:flex; gap:10px; margin-bottom: 20px;">
                 <input type="text" id="searchJob" class="search-bar" placeholder="Search job title..." onkeyup="filterJobs()">
                 <select id="filterJobStatus" class="search-bar" style="width:150px;" onchange="filterJobs()">
                     <option value="All">All Statuses</option>
@@ -201,7 +244,7 @@
             <div class="page-header">
                 <h1 class="page-title">Review Submissions</h1>
             </div>
-            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+            <div class="search-row" style="display:flex; gap:10px; margin-bottom: 20px;">
                 <input type="text" id="searchSubmission" class="search-bar" placeholder="Search user, job, or email..." onkeyup="filterSubmissions()">
                 <select id="filterSubmissionStatus" class="search-bar" style="width:150px;" onchange="filterSubmissions()">
                     <option value="Under Review">Under Review</option>
@@ -223,7 +266,7 @@
                 <h1 class="page-title">Payout Requests</h1>
                 <button class="btn-sm btn-success" onclick="exportWithdrawalsCSV()"><i data-lucide="download" size="16"></i> Export CSV</button>
             </div>
-            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+            <div class="search-row" style="display:flex; gap:10px; margin-bottom: 20px;">
                 <input type="text" id="searchWithdrawal" class="search-bar" placeholder="Search phone or email..." onkeyup="filterWithdrawals()">
                 <select id="filterWithdrawalStatus" class="search-bar" style="width:150px;" onchange="filterWithdrawals()">
                     <option value="Pending">Pending</option>
@@ -243,7 +286,7 @@
         <div id="view-users" class="page-view d-none">
             <div class="page-header">
                 <h1 class="page-title">User Management</h1>
-                <div style="display:flex; gap:10px;">
+                <div class="search-row" style="display:flex; gap:10px;">
                     <input type="text" id="searchUser" class="search-bar" placeholder="Search email, name, UID..." onkeyup="filterUsers()">
                     <select id="filterTier" class="search-bar" style="width:120px;" onchange="filterUsers()">
                         <option value="All">All Tiers</option>
@@ -265,7 +308,7 @@
             <div class="page-header">
                 <h1 class="page-title">Support Tickets</h1>
             </div>
-            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+            <div class="search-row" style="display:flex; gap:10px; margin-bottom: 20px;">
                 <input type="text" id="searchTicket" class="search-bar" placeholder="Search user, ID, subject..." onkeyup="filterTickets()">
                 <select id="filterTicketStatus" class="search-bar" style="width:150px;" onchange="filterTickets()">
                     <option value="Open">Open (Needs Reply)</option>
@@ -286,7 +329,7 @@
             <div class="page-header">
                 <h1 class="page-title">Manual Payments Verification</h1>
             </div>
-            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+            <div class="search-row" style="display:flex; gap:10px; margin-bottom: 20px;">
                 <input type="text" id="searchManualPayment" class="search-bar" placeholder="Search email, UID..." onkeyup="filterManualPayments()">
                 <select id="filterManualPaymentStatus" class="search-bar" style="width:150px;" onchange="filterManualPayments()">
                     <option value="Pending">Pending</option>
@@ -561,6 +604,31 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const navItems = document.querySelectorAll('.sidebar .nav-item');
+
+            function toggleMenu() {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            }
+
+            if(menuBtn) menuBtn.addEventListener('click', toggleMenu);
+            if(overlay) overlay.addEventListener('click', toggleMenu);
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('open');
+                        overlay.classList.remove('active');
+                    }
+                });
+            });
+        });
+    </script>
     <script src="admin.js"></script>
     <script>lucide.createIcons();</script>
 </body>
