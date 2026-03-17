@@ -884,19 +884,26 @@ window.fetchMyTasks = async function(email) {
             list.innerHTML = result.data.reverse().map(task => {
                 let actionBtn = "";
                 let statusColor = "var(--text-dim)";
+                let reasonHtml = "";
                 
-                if (task.status === "In Progress") {
+                if (task.status === "Pending Proposal") {
+                    statusColor = "#94a3b8"; // Slate Gray
+                    actionBtn = `<button class="btn-hunt" style="background: transparent; border: 1px solid #94a3b8; color: #94a3b8; width: 100%;" disabled><i data-lucide="clock" size="16"></i> Awaiting Approval</button>`;
+                } else if (task.status === "In Progress") {
                     statusColor = "#f59e0b"; // Warning/Yellow
-                    actionBtn = `<button class="btn-hunt" style="background: #f59e0b;" onclick="openSubmitWorkModal('${task.subId}', '${task.title.replace(/'/g, "\\'")}')">Submit Work</button>`;
+                    actionBtn = `<button class="btn-hunt" style="background: #f59e0b; width: 100%;" onclick="openSubmitWorkModal('${task.subId}', '${task.title.replace(/'/g, "\\'")}')">Submit Work</button>`;
                 } else if (task.status === "Under Review") {
                     statusColor = "#3b82f6"; // Blue
-                    actionBtn = `<button class="btn-hunt" style="background: transparent; border: 1px solid #3b82f6; color: #3b82f6;" disabled><i data-lucide="loader" size="16"></i> Reviewing</button>`;
+                    actionBtn = `<button class="btn-hunt" style="background: transparent; border: 1px solid #3b82f6; color: #3b82f6; width: 100%;" disabled><i data-lucide="loader" size="16"></i> Reviewing</button>`;
                 } else if (task.status === "Approved") {
                     statusColor = "#10b981"; // Green
-                    actionBtn = `<button class="btn-hunt" style="background: #10b981;" disabled><i data-lucide="check-circle" size="16"></i> Paid</button>`;
+                    actionBtn = `<button class="btn-hunt" style="background: #10b981; width: 100%;" disabled><i data-lucide="check-circle" size="16"></i> Paid</button>`;
                 } else if (task.status === "Rejected") {
                     statusColor = "#ef4444"; // Red
-                    actionBtn = `<button class="btn-hunt" style="background: transparent; border: 1px solid #ef4444; color: #ef4444;" disabled><i data-lucide="x-circle" size="16"></i> Rejected</button>`;
+                    actionBtn = `<button class="btn-hunt" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; width: 100%;" disabled><i data-lucide="x-circle" size="16"></i> Rejected</button>`;
+                    if (task.adminReason) {
+                        reasonHtml = `<div style="margin-top: 12px; padding: 10px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; border-left: 3px solid #ef4444; font-size: 0.8rem; color: #fca5a5;"><strong>Admin Note:</strong> ${task.adminReason}</div>`;
+                    }
                 }
 
                 return `
@@ -913,6 +920,7 @@ window.fetchMyTasks = async function(email) {
                     </div>
                     <div style="margin-top: auto;">
                         ${actionBtn}
+                        ${reasonHtml}
                     </div>
                 </div>`;
             }).join('');
