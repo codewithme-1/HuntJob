@@ -632,6 +632,12 @@ function openPostJobModal() {
     document.getElementById('jobReward').value = "";
     document.getElementById('jobTokens').value = "2";
     document.getElementById('jobStatus').value = "Draft";
+    
+    // Uncheck by default
+    if(document.getElementById('jobSendAlert')) {
+        document.getElementById('jobSendAlert').checked = false;
+    }
+
     document.getElementById('jobModalTitle').innerText = "Post New Task";
     document.getElementById('jobModal').classList.remove('d-none');
 }
@@ -648,12 +654,22 @@ function openEditJobModal(jobId) {
     document.getElementById('jobTokens').value = job.tokens;
     document.getElementById('jobDesc').value = job.desc;
     document.getElementById('jobStatus').value = job.status;
+
+    // Uncheck by default
+    if(document.getElementById('jobSendAlert')) {
+        document.getElementById('jobSendAlert').checked = false;
+    }
     
     document.getElementById('jobModalTitle').innerText = "Edit Task";
     document.getElementById('jobModal').classList.remove('d-none');
 }
 
 async function saveJob() {
+    // PHASE 4: Capture the new alert checkbox
+    let sendAlertVal = false;
+    const alertCheckbox = document.getElementById('jobSendAlert');
+    if (alertCheckbox) sendAlertVal = alertCheckbox.checked;
+
     const payload = {
         action: "adminSaveJob",
         rowId: document.getElementById('jobRowId').value, 
@@ -663,12 +679,13 @@ async function saveJob() {
         reward: Number(document.getElementById('jobReward').value),
         tokens: Number(document.getElementById('jobTokens').value),
         desc: document.getElementById('jobDesc').value,
-        status: document.getElementById('jobStatus').value
+        status: document.getElementById('jobStatus').value,
+        sendAlert: sendAlertVal // Add the boolean
     };
 
     if(!payload.title || !payload.reward) { showToast("Title and Reward are required", "danger"); return; }
 
-    showToast("Saving task...", "pending");
+    showToast(sendAlertVal ? "Saving & Sending Alerts..." : "Saving task...", "pending");
     closeModal('jobModal');
     
     const res = await adminApiRequest(payload);
