@@ -448,11 +448,19 @@ function renderSubmissionsTable(data) {
     }
 
     tbody.innerHTML = data.map(s => {
-        let statusClass = s.status === 'Under Review' ? 'warning' : (s.status === 'Approved' ? 'success' : 'danger');
+        let statusClass = (s.status === 'Under Review' || s.status === 'Pending Proposal') ? 'warning' : (s.status === 'Approved' ? 'success' : 'danger');
         
-        let actionBtn = s.status === 'Under Review' 
-            ? `<button class="btn-sm btn-primary" onclick="openReviewModal('${s.subId}')"><i data-lucide="eye" size="14"></i> Review</button>`
-            : `<button class="btn-sm" style="background:var(--card); border:1px solid var(--border);" disabled>Processed</button>`;
+        let actionBtn = "";
+        if (s.status === 'Pending Proposal') {
+            actionBtn = `<button class="btn-sm btn-primary" onclick="openReviewModal('${s.subId}', 'Proposal')"><i data-lucide="eye" size="14"></i> View Proposal</button>`;
+        } else if (s.status === 'Under Review') {
+            actionBtn = `<button class="btn-sm btn-primary" onclick="openReviewModal('${s.subId}', 'Final')"><i data-lucide="check-square" size="14"></i> Review Work</button>`;
+        } else if (s.status === 'In Progress') {
+            statusClass = 'pending';
+            actionBtn = `<button class="btn-sm" style="background:transparent; border:1px solid var(--border); color:var(--warning);" disabled>Working</button>`;
+        } else {
+            actionBtn = `<button class="btn-sm" style="background:var(--card); border:1px solid var(--border);" disabled>Processed</button>`;
+        }
 
         return `<tr>
             <td style="color:var(--text-dim); font-size:0.85rem;">${new Date(s.date).toLocaleDateString()}</td>
@@ -478,34 +486,56 @@ function filterSubmissions() {
     renderSubmissionsTable(filtered);
 }
 
-function openReviewModal(subId) {
+function openReviewModal(subId, type) {
     const sub = currentSubmissions.find(s => s.subId === subId);
     if (!sub) return;
 
     document.getElementById('reviewRowId').value = sub.rowId;
     document.getElementById('reviewUid').value = sub.uid;
     document.getElementById('reviewReward').value = sub.reward;
+    document.getElementById('reviewType').value = type; // "Proposal" or "Final"
 
     document.getElementById('reviewUserDisplay').innerText = `${sub.userName} (${sub.userEmail})`;
     document.getElementById('reviewRewardDisplay').innerText = `KES ${sub.reward}`;
     document.getElementById('reviewJobTitle').value = sub.jobTitle;
     document.getElementById('reviewProposal').value = sub.proposal || "No proposal provided.";
     document.getElementById('reviewContent').value = sub.content || "No final work submitted.";
+    
+    // Hide reject reason box initially
+    document.getElementById('rejectReasonContainer').style.display = 'none';
+    document.getElementById('reviewRejectReason').value = "";
+
+    // Change button text based on what we are reviewing
+    const approveBtn = document.getElementById('reviewApproveBtn');
+    if (type === "Proposal") {
+        approveBtn.innerHTML = `<i data-lucide="check-circle" size="18"></i> Approve Proposal`;
+    } else {
+        approveBtn.innerHTML = `<i data-lucide="check-circle" size="18"></i> Approve & Pay`;
+    }
 
     document.getElementById('reviewSubmissionModal').classList.remove('d-none');
+    lucide.createIcons();
+}
+
+function showRejectReasonInput() {
+    document.getElementById('rejectReasonContainer').style.display = 'block';
+    showToast("Please enter a reason before rejecting.", "warning");
 }
 
 async function executeApproveSubmission() {
     const rowId = document.getElementById('reviewRowId').value;
     const uid = document.getElementById('reviewUid').value;
     const reward = document.getElementById('reviewReward').value;
+    const type = document.getElementById('reviewType').value;
 
     closeModal('reviewSubmissionModal');
-    showToast("Approving & Disbursing KES...", "pending");
+    
+    const decision = type === "Proposal" ? "In Progress" : "Approved";
+    showToast(type === "Proposal" ? "Approving proposal..." : "Approving & Disbursing KES...", "pending");
 
     const res = await adminApiRequest({ 
         action: "adminProcessSubmission", 
-        rowId: rowId, uid: uid, decision: "Approved", reward: Number(reward) 
+        rowId: rowId, uid: uid, decision: decision, reward: Number(reward), reason: ""
     });
 
     showToast(res.message, res.status === "Success" ? "success" : "danger");
@@ -513,6 +543,21 @@ async function executeApproveSubmission() {
 }
 
 async function executeRejectSubmission() {
+    const reasonContainer = document.getElementById('rejectReasonContainer');
+    const reasonInput = document.getElementById('reviewRejectReason');
+
+    // If reason box is hidden, show it and stop execution
+    if (reasonContainer.style.display === 'none' || reasonContainer.style.display === '') {
+        showRejectReasonInput();
+        return;
+    }
+
+    const reason = reasonInput.value.trim();
+    if (!reason || reason.length < 5) {
+        showToast("Please provide a valid reason for rejection.", "danger");
+        return;
+    }
+
     const rowId = document.getElementById('reviewRowId').value;
     const uid = document.getElementById('reviewUid').value;
 
@@ -521,7 +566,7 @@ async function executeRejectSubmission() {
 
     const res = await adminApiRequest({ 
         action: "adminProcessSubmission", 
-        rowId: rowId, uid: uid, decision: "Rejected", reward: 0 
+        rowId: rowId, uid: uid, decision: "Rejected", reward: 0, reason: reason
     });
 
     showToast(res.message, res.status === "Success" ? "success" : "danger");
