@@ -78,6 +78,38 @@
         }
         .sidebar-overlay.active { display: block; opacity: 1; }
 
+        /* Leaderboard Flipping Ticker */
+        .leaderboard-ticker {
+            background: rgba(245, 158, 11, 0.05);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .ticker-wrap {
+            flex-grow: 1;
+            height: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+        .ticker-item {
+            height: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: 700;
+            animation: flipIn 0.5s ease-out;
+        }
+        @keyframes flipIn {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
         /* Swinging Card Logic (Adjusted for light theme) */
         .swinging-card {
             background: rgba(14, 165, 233, 0.05); /* Light blue tint */
@@ -303,6 +335,15 @@
         </header>
 
         <div id="view-dashboard" class="page-view">
+            
+            <div class="leaderboard-ticker">
+                <i data-lucide="trophy" color="#f59e0b" size="20"></i>
+                <span style="font-weight: 700; color: var(--text-dim); margin-left: 8px; margin-right: 12px; font-size: 0.9rem; text-transform: uppercase;">Top Hunters:</span>
+                <div class="ticker-wrap" id="leaderboardTicker">
+                    <div style="color:var(--text-dim); font-size:0.9rem; line-height: 24px;">Loading leaderboard...</div>
+                </div>
+            </div>
+
             <div class="swinging-card">
                 <i data-lucide="info" color="#0ea5e9"></i>
                 <p style="font-size: 0.95rem; color: var(--text-main); flex-grow: 1; font-weight: 500;">Balance not reflecting? Click refresh to sync with the hunter ledger.</p>
@@ -865,6 +906,18 @@
         </div>
     </div>
 
+    <div id="dailyBonusModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div style="width: 80px; height: 80px; background: rgba(245, 158, 11, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                <i data-lucide="gift" size="40" color="#f59e0b"></i>
+            </div>
+            <h2 style="margin: 0 0 10px; color: var(--text-main); font-size: 1.8rem; letter-spacing: -0.5px;">Daily Reward!</h2>
+            <p id="dailyBonusText" style="color: var(--text-dim); margin-bottom: 2rem; font-size: 1rem; line-height: 1.5;">Claim your free tokens to keep hunting.</p>
+            
+            <button class="btn-hunt" id="claimBonusBtn" style="width: 100%; padding: 14px; font-size: 1.05rem;" onclick="claimDailyBonus()">Claim Tokens</button>
+            <button class="btn-alt" style="margin-top: 10px; width: 100%; border: none; box-shadow: none;" onclick="dismissBonus()">Maybe Later</button>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.getElementById('appSidebar');
