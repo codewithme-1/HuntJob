@@ -248,6 +248,7 @@
                 <input type="text" id="searchSubmission" class="search-bar" placeholder="Search user, job, or email..." onkeyup="filterSubmissions()">
                 <select id="filterSubmissionStatus" class="search-bar" style="width:150px;" onchange="filterSubmissions()">
                     <option value="Under Review">Under Review</option>
+                    <option value="Pending Proposal">Pending Proposals</option>
                     <option value="Approved">Approved</option>
                     <option value="Rejected">Rejected</option>
                     <option value="All">All</option>
@@ -566,6 +567,13 @@
             <div class="form-group">
                 <label>Job Description & Requirements</label>
                 <textarea id="jobDesc" style="width: 100%; height: 100px; padding: 10px; border-radius: 6px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: white; resize: none;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--primary);">
+                    <input type="checkbox" id="jobSendAlert" style="width: 18px; height: 18px;">
+                    Send Email Alert to All Hunters (If Active)
+                </label>
             </div>
 
             <div class="form-group">
