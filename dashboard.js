@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('userGreeting').innerText = user.username || "Hunter";
     updateUIVisuals(user);
     renderTasks(user); 
+    fetchLeaderboard(); // NEW: Load leaderboard on init
 
     syncAllData(user.email);
     setInterval(() => syncAllData(user.email), 20000); 
@@ -88,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const currentSession = JSON.parse(localStorage.getItem('huntJob_session')) || {};
         
+        if (targetView === 'dashboard') fetchLeaderboard(); // Refresh leaderboard
         if (targetView === 'wallet') fetchWithdrawals(currentSession.email);
         if (targetView === 'referrals') fetchReferrals(currentSession.uid); 
         if (targetView === 'tasks') fetchMyTasks(currentSession.email); 
@@ -145,6 +147,9 @@ window.manualRefresh = async function(btnElement) {
 
     try {
         await syncAllData(session.email);
+        if (!document.getElementById('view-dashboard').classList.contains('d-none')) {
+            fetchLeaderboard();
+        }
         if (!document.getElementById('view-wallet').classList.contains('d-none')) {
             await fetchWithdrawals(session.email);
         }
@@ -237,7 +242,6 @@ function updateUIVisuals(data) {
 
     const refLinkEl = document.getElementById('refLinkText');
     if (refLinkEl && data.uid) {
-        // Force the working www URL
         refLinkEl.innerText = `https://www.huntjobs.co.ke/?ref=${data.uid}`;
     }
 }
@@ -258,6 +262,11 @@ async function syncAllData(email) {
             localStorage.setItem('huntJob_session', JSON.stringify({...oldSession, ...payload}));
             updateUIVisuals(payload);
             
+            // PHASE 4: Check if they have a daily bonus waiting (AND haven't dismissed it this session)
+            if (payload.canClaimBonus === true && !sessionStorage.getItem('bonusDealtWith')) {
+                triggerDailyBonusModal(payload.tier);
+            }
+
             if (oldSession.tier !== payload.tier) {
                 renderTasks(payload);
             }
@@ -266,6 +275,111 @@ async function syncAllData(email) {
         console.error("Auto-sync Error:", err);
     }
 }
+
+/**
+ * ==========================================
+ * PHASE 4 - DAILY BONUS & LEADERBOARD
+ * ==========================================
+ */
+
+function triggerDailyBonusModal(tier) {
+    const modal = document.getElementById('dailyBonusModal');
+    const textEl = document.getElementById('dailyBonusText');
+    
+    // Don't show if modal is already open
+    if (modal.style.display === 'flex') return;
+
+    if (tier === "Starter") {
+        textEl.innerHTML = `Welcome back Starter Hunter!<br>Claim your <strong>100 Daily Tokens</strong> to keep bidding.`;
+    } else if (tier === "Pro") {
+        textEl.innerHTML = `Welcome back Pro Hunter!<br>Claim your massive <strong>250 Daily Tokens</strong>. Secure the bag!`;
+    } else {
+        textEl.innerHTML = `Welcome back!<br>Claim your <strong>20 Daily Tokens</strong>.<br><br><span style="font-size: 0.85rem; color: var(--warning);">Upgrade to Starter to get 100 daily tokens tomorrow.</span>`;
+    }
+
+    modal.style.display = 'flex';
+}
+
+window.dismissBonus = function() {
+    sessionStorage.setItem('bonusDealtWith', 'true');
+    closeModal('dailyBonusModal');
+};
+
+window.claimDailyBonus = async function() {
+    const session = JSON.parse(localStorage.getItem('huntJob_session'));
+    const btn = document.getElementById('claimBonusBtn');
+
+    btn.innerText = "Claiming..."; btn.disabled = true;
+
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "claimDailyBonus", uid: session.uid })
+        });
+        const text = await res.text();
+        const result = JSON.parse(text);
+
+        if (result.status === "Success") {
+            showToast(`+${result.data.tokensAdded} Tokens Added!`, "success");
+            sessionStorage.setItem('bonusDealtWith', 'true'); // Stop the loop!
+            closeModal('dailyBonusModal');
+            syncAllData(session.email); // Update UI
+        } else {
+            showToast(result.message, "warning");
+            sessionStorage.setItem('bonusDealtWith', 'true');
+            closeModal('dailyBonusModal');
+        }
+    } catch (e) {
+        showToast("Network Error.", "error");
+    } finally {
+        btn.innerText = "Claim Tokens"; btn.disabled = false;
+    }
+};
+
+window.fetchLeaderboard = async function() {
+    const list = document.getElementById('leaderboardTicker');
+    if (!list) return;
+
+    try {
+        const res = await fetch(`${SCRIPT_URL}?action=getLeaderboard&t=${Date.now()}`);
+        const result = await res.json();
+
+        if (result.status === "Success" && Array.isArray(result.data)) {
+            if (result.data.length === 0) {
+                list.innerHTML = `<div style="color:var(--text-dim); font-size:0.9rem; line-height:24px;">No top hunters yet.</div>`;
+                return;
+            }
+
+            window.leaderboardData = result.data;
+            let currentIndex = 0;
+
+            const renderTicker = () => {
+                if (!window.leaderboardData || window.leaderboardData.length === 0) return;
+                const hunter = window.leaderboardData[currentIndex];
+                let tierBadge = `<span style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; color: var(--primary); border: 1px solid rgba(16, 185, 129, 0.2);">${hunter.tier || 'Unpaid'}</span>`;
+                
+                list.innerHTML = `
+                <div class="ticker-item">
+                    <span style="color: var(--text-main);">${hunter.name}</span>
+                    ${tierBadge}
+                    <span style="color: var(--success); margin-left: auto;">KES ${parseSafeNumber(hunter.earned).toLocaleString()}</span>
+                </div>`;
+                
+                currentIndex = (currentIndex + 1) % window.leaderboardData.length;
+            };
+
+            // Initial render
+            renderTicker();
+            
+            // Flip to the next person every 3.5 seconds
+            if (window.leaderboardInterval) clearInterval(window.leaderboardInterval);
+            window.leaderboardInterval = setInterval(renderTicker, 3500); 
+
+        }
+    } catch (e) {
+        list.innerHTML = `<div style="color:#ef4444; font-size:0.9rem; line-height:24px;">Failed to load.</div>`;
+    }
+};
 
 /**
  * SETTINGS API: Update Personal Info
