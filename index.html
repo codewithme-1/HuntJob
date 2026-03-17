@@ -392,10 +392,6 @@
         .faq-item.active .faq-icon { transform: rotate(180deg); }
         .faq-item.active .faq-answer { padding: 0 1.5rem 1.5rem; max-height: 500px; opacity: 1; }
 
-        /* Floating WhatsApp Widget */
-        .whatsapp-float { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; box-shadow: var(--shadow-float); z-index: 1000; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.3s ease;}
-        .whatsapp-float:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(37, 211, 102, 0.4);}
-
         /* --- Auth Modal Styling --- */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
@@ -514,8 +510,6 @@
             .btn-main, .btn-alt { width: 100%; justify-content: center; }
             
             .demo-video-wrapper { margin-top: 3rem; }
-            
-            .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; }
         }
     </style>
 </head>
@@ -771,10 +765,6 @@
         </div>
     </section>
 
-    <a href="https://wa.me/254743611394" class="whatsapp-float" target="_blank" aria-label="Chat with Admin">
-        <i data-lucide="message-circle" size="32"></i>
-    </a>
-
     <div id="authModal" class="modal-overlay">
         <div class="modal-content">
             <button class="close-modal" id="closeModal">&times;</button>
@@ -872,7 +862,6 @@
             <div class="footer-links">
                 <h4>Community</h4>
                 <ul>
-                    <li><a href="https://wa.me/254743611394" target="_blank">WhatsApp Channel</a></li>
                     <li><a href="#" onclick="document.getElementById('navRegisterBtn').click()">Refer & Earn</a></li>
                     <li><a href="#testimonials">Success Stories</a></li>
                 </ul>
@@ -932,6 +921,18 @@
     <script src="app.js"></script>
     <script>
         lucide.createIcons();
+    </script>
+    
+    <script>
+      window.chatbaseConfig = {
+        chatbotId: "IujpmnYFRxaadYdvmtB2j",
+      }
+    </script>
+    <script
+      src="https://www.chatbase.co/embed.min.js"
+      chatbotId="IujpmnYFRxaadYdvmtB2j"
+      domain="www.chatbase.co"
+      defer>
     </script>
 </body>
 </html>
