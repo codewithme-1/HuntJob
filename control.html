@@ -175,6 +175,7 @@
         <a class="nav-item" data-view="submissions"><i data-lucide="check-square"></i> Submissions</a>
         <a class="nav-item" data-view="withdrawals"><i data-lucide="banknote"></i> Withdrawals</a>
         <a class="nav-item" data-view="users"><i data-lucide="users"></i> Users</a>
+        <a class="nav-item" data-view="agents"><i data-lucide="crown"></i> Partners / Agents</a>
         <a class="nav-item" data-view="tickets"><i data-lucide="life-buoy"></i> Support Tickets</a>
         <a class="nav-item" data-view="manual-payments"><i data-lucide="file-text"></i> Manual Payments</a>
         <div style="flex:1;"></div>
@@ -301,6 +302,27 @@
                 <table>
                     <thead><tr><th>UID</th><th>User Info</th><th>Tier</th><th>Tokens</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody id="usersTableBody"><tr><td colspan="7">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="view-agents" class="page-view d-none">
+            <div class="page-header">
+                <h1 class="page-title">Partners & Agents</h1>
+                <div class="search-row" style="display:flex; gap:10px;">
+                    <input type="text" id="searchAgent" class="search-bar" placeholder="Search ID, email, name..." onkeyup="filterAgents()">
+                    <select id="filterAgentTier" class="search-bar" style="width:120px;" onchange="filterAgents()">
+                        <option value="All">All Tiers</option>
+                        <option value="Gold">Gold</option>
+                        <option value="Silver">Silver</option>
+                        <option value="Bronze">Bronze</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card table-container">
+                <table>
+                    <thead><tr><th>Agent ID</th><th>Info</th><th>Tier</th><th>Signups</th><th>Conversions</th><th>Balance</th><th>Total Earned</th></tr></thead>
+                    <tbody id="agentsTableBody"><tr><td colspan="7">Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
