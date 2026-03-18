@@ -906,18 +906,6 @@
         </div>
     </div>
 
-    <div id="dailyBonusModal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <div style="width: 80px; height: 80px; background: rgba(245, 158, 11, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
-                <i data-lucide="gift" size="40" color="#f59e0b"></i>
-            </div>
-            <h2 style="margin: 0 0 10px; color: var(--text-main); font-size: 1.8rem; letter-spacing: -0.5px;">Daily Reward!</h2>
-            <p id="dailyBonusText" style="color: var(--text-dim); margin-bottom: 2rem; font-size: 1rem; line-height: 1.5;">Claim your free tokens to keep hunting.</p>
-            
-            <button class="btn-hunt" id="claimBonusBtn" style="width: 100%; padding: 14px; font-size: 1.05rem;" onclick="claimDailyBonus()">Claim Tokens</button>
-            <button class="btn-alt" style="margin-top: 10px; width: 100%; border: none; box-shadow: none;" onclick="dismissBonus()">Maybe Later</button>
-        </div>
-    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.getElementById('appSidebar');
