@@ -10,8 +10,9 @@ let currentUsers = [];
 let currentWithdrawals = [];
 let currentSubmissions = []; 
 let currentJobs = []; 
-let currentTickets = []; // NEW: Stores support tickets
-let currentManualPayments = []; // NEW: Stores manual payments
+let currentTickets = []; 
+let currentManualPayments = []; 
+let currentAgents = []; // NEW: Stores Agent Data
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Check Auth State on Load
@@ -42,8 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target === 'submissions') loadSubmissions();
             if (target === 'withdrawals') loadWithdrawals();
             if (target === 'users') loadUsers();
+            if (target === 'agents') loadAgents(); // NEW
             if (target === 'tickets') loadTickets(); 
-            if (target === 'manual-payments') loadManualPayments(); // NEW
+            if (target === 'manual-payments') loadManualPayments();
         });
     });
 });
@@ -180,10 +182,10 @@ function renderWithdrawalsTable(data) {
     }
     
     tbody.innerHTML = data.map(w => {
-        let statusClass = w.status === 'Pending' ? 'pending' : (w.status.includes('Reject') ? 'danger' : 'success');
+        let statusClass = w.status.includes('Pending') ? 'pending' : (w.status.includes('Reject') ? 'danger' : 'success');
         
         let actions = `-`;
-        if (w.status === 'Pending') {
+        if (w.status.includes('Pending')) {
             actions = `<button class="btn-sm btn-success" onclick="openApproveModal(${w.rowId})">Pay</button>
                        <button class="btn-sm btn-danger" onclick="openRejectModal(${w.rowId}, '${w.email}', ${w.amount})">Reject</button>`;
         }
@@ -665,7 +667,6 @@ function openEditJobModal(jobId) {
 }
 
 async function saveJob() {
-    // PHASE 4: Capture the new alert checkbox
     let sendAlertVal = false;
     const alertCheckbox = document.getElementById('jobSendAlert');
     if (alertCheckbox) sendAlertVal = alertCheckbox.checked;
@@ -694,7 +695,7 @@ async function saveJob() {
 }
 
 /* ============================================================
-   TICKET MANAGEMENT MODULE (PHASE 2)
+   TICKET MANAGEMENT MODULE
    ============================================================ */
 
 async function loadTickets() {
@@ -822,7 +823,7 @@ async function adminCloseActiveTicket() {
 }
 
 /* ============================================================
-   NEW: MANUAL PAYMENTS MODULE
+   MANUAL PAYMENTS MODULE
    ============================================================ */
 
 async function loadManualPayments() {
@@ -909,6 +910,59 @@ async function executeRejectManualPayment() {
     if(res.status === "Success") loadManualPayments();
 }
 
+/* ============================================================
+   NEW: AGENT / PARTNER MANAGEMENT MODULE
+   ============================================================ */
+
+async function loadAgents() {
+    const tbody = document.getElementById('agentsTableBody');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Loading Agents...</td></tr>';
+    
+    const result = await adminApiRequest({ action: "adminGetAgents" });
+    if (result.status === "Success") {
+        currentAgents = result.data;
+        filterAgents(); 
+    } else {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--danger);">${result.message}</td></tr>`;
+    }
+}
+
+function renderAgentsTable(data) {
+    const tbody = document.getElementById('agentsTableBody');
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-dim);">No agents found.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = data.map(a => {
+        let tc = a.tier === 'Gold' ? 'success' : (a.tier === 'Silver' ? 'primary' : 'warning');
+        
+        return `<tr>
+            <td style="font-size:0.8rem; color:var(--text-dim); font-family:monospace;">${a.agentId}</td>
+            <td><strong>${a.name}</strong><br><span style="font-size:0.8rem; color:var(--text-dim);">${a.email}<br>${a.phone}</span></td>
+            <td><span class="badge ${tc}">${a.tier}</span></td>
+            <td style="text-align:center; font-weight:bold;">${a.signups}</td>
+            <td style="text-align:center; font-weight:bold; color:var(--primary);">${a.conversions}</td>
+            <td style="color:var(--success); font-weight:bold;">KES ${parseFloat(a.balance).toLocaleString()}</td>
+            <td style="color:var(--text-main); font-weight:bold;">KES ${parseFloat(a.totalEarned).toLocaleString()}</td>
+        </tr>`;
+    }).join('');
+    lucide.createIcons();
+}
+
+function filterAgents() {
+    const search = document.getElementById('searchAgent').value.toLowerCase();
+    const tier = document.getElementById('filterAgentTier').value;
+    
+    const filtered = currentAgents.filter(a => {
+        const matchSearch = a.name.toLowerCase().includes(search) || a.email.toLowerCase().includes(search) || a.agentId.toLowerCase().includes(search);
+        const matchTier = tier === "All" || a.tier === tier;
+        return matchSearch && matchTier;
+    });
+    
+    renderAgentsTable(filtered);
+}
+
 
 window.refreshData = function() {
     const activeTab = document.querySelector('.nav-item.active').getAttribute('data-view');
@@ -917,6 +971,7 @@ window.refreshData = function() {
     if (activeTab === 'submissions') loadSubmissions();
     if (activeTab === 'withdrawals') loadWithdrawals();
     if (activeTab === 'users') loadUsers();
+    if (activeTab === 'agents') loadAgents();
     if (activeTab === 'tickets') loadTickets();
     if (activeTab === 'manual-payments') loadManualPayments();
     showToast("Data refreshed.", "success");
