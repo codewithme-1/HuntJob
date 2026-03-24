@@ -661,6 +661,7 @@ function displayFilteredJobs(jobsToRender) {
         let userTier = userData.tier || "Unpaid";
         let jobRewardAmt = parseSafeNumber(job.reward);
         let isLocked = false;
+        let isExpired = job.isExpired === true; // Read the dynamic flag from our backend update
         
         // Unpaid accounts can ONLY bid on tasks <= 500 KES
         if (userTier === "Unpaid" && jobRewardAmt > 500) isLocked = true;
@@ -670,6 +671,8 @@ function displayFilteredJobs(jobsToRender) {
         let btnHtml = "";
         if (job.hasApplied) {
             btnHtml = `<button class="btn-hunt" style="background: #3b82f6; width:100%;" disabled>Proposal Submitted</button>`;
+        } else if (isExpired) {
+            btnHtml = `<button class="btn-hunt" style="background: var(--text-dim); width:100%; box-shadow: none; cursor: not-allowed;" disabled>Deadline Passed</button>`;
         } else if (isLocked) {
             btnHtml = `<button class="btn-hunt" style="width:100%;" onclick="upgradeRedirect()">Upgrade to Bid</button>`;
         } else {
@@ -677,11 +680,11 @@ function displayFilteredJobs(jobsToRender) {
         }
 
         return `
-        <div class="task-card ${isLocked ? 'locked-task' : ''}">
+        <div class="task-card ${(isLocked || isExpired) ? 'locked-task' : ''}">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                 <div style="flex: 1; padding-right: 10px;">
                     <span class="tier-tag" style="margin-bottom: 8px; display: inline-block;">${job.category}</span>
-                    <h3 style="font-size: 1.1rem; margin-bottom: 8px; line-height: 1.2;">${job.title} ${isLocked ? '<i data-lucide="lock" size="14"></i>' : ''}</h3>
+                    <h3 style="font-size: 1.1rem; margin-bottom: 8px; line-height: 1.2;">${job.title} ${(isLocked || isExpired) ? '<i data-lucide="lock" size="14"></i>' : ''}</h3>
                     <p style="font-size: 0.85rem; color: var(--text-dim); line-height: 1.4; margin-bottom: 12px;">${job.desc || 'No description provided.'}</p>
                 </div>
                 <div style="text-align: right; min-width: 80px;">
@@ -1461,7 +1464,7 @@ window.requestWithdrawal = async function() {
     const amount = parseSafeNumber(amountInput.value);
     const phone = phoneInput.value.trim();
 
-    if (!amount || amount < 500) return showToast("Minimum withdrawal is KES 500", "error");
+    if (!amount || amount < 999) return showToast("Minimum withdrawal is KES 999", "error");
     if (!phone || phone.length < 10) return showToast("Enter a valid M-Pesa number for payout.", "error");
 
     showToast("Submitting withdrawal request...", "success");
