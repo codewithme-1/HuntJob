@@ -42,7 +42,7 @@
         }
         .login-box button:hover { background: var(--primary-hover); }
 
-        /* Mobile Header & Overlay (Hidden on Desktop) */
+        /* Mobile Header & Overlay */
         .sidebar-overlay {
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px);
             z-index: 999; display: none; opacity: 0; transition: opacity 0.3s ease;
@@ -74,7 +74,6 @@
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .page-title { font-size: 1.8rem; font-weight: bold; }
         
-        /* Generic Components */
         .d-none { display: none !important; }
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
         
@@ -99,17 +98,11 @@
         .btn-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
         .btn-danger:hover { background: var(--danger); color: white; }
 
-        /* Dashboard Stats Grid */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; display: flex; align-items: center; gap: 15px; }
         .stat-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(139, 92, 246, 0.1); color: var(--primary); display: flex; justify-content: center; align-items: center; }
         .stat-value { font-size: 1.5rem; font-weight: bold; margin-top: 5px; }
 
-        /* Toasts */
-        .toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: bold; z-index: 10000; animation: fadeUp 0.3s ease; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Modals & Inputs */
         .search-bar { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: white; outline: none; width: 250px; }
         .custom-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px;}
@@ -125,7 +118,6 @@
         .chat-admin { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
         .chat-time { display: block; font-size: 0.65rem; opacity: 0.7; margin-top: 5px; text-align: right; }
 
-        /* Mobile Responsiveness */
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
@@ -137,16 +129,9 @@
             .main-content { padding: 15px; }
             .page-header { flex-direction: column; align-items: flex-start; gap: 15px; margin-bottom: 20px; }
             .stats-grid { grid-template-columns: 1fr; }
-            
-            /* Make search bars stack and fill width */
             .search-row { flex-direction: column; gap: 10px; }
             .search-bar { width: 100% !important; flex: 1; }
-            
-            /* Stack modal elements */
             .modal-content { width: 95%; padding: 15px; }
-            .modal-content [style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
-            .modal-content [style*="display: flex; gap: 10px"] { flex-direction: column; }
-            .modal-content [style*="display: flex; justify-content: space-between"] { flex-direction: column; gap: 10px; align-items: flex-start;}
         }
 
     </style>
@@ -178,6 +163,7 @@
         <a class="nav-item" data-view="agents"><i data-lucide="crown"></i> Partners / Agents</a>
         <a class="nav-item" data-view="tickets"><i data-lucide="life-buoy"></i> Support Tickets</a>
         <a class="nav-item" data-view="manual-payments"><i data-lucide="file-text"></i> Manual Payments</a>
+        <a class="nav-item" data-view="broadcast"><i data-lucide="mail"></i> Broadcasts</a>
         <div style="flex:1;"></div>
         <a class="nav-item" onclick="logoutAdmin()" style="color:var(--danger);"><i data-lucide="log-out"></i> Secure Logout</a>
     </nav>
@@ -224,6 +210,17 @@
                 <h1 class="page-title">Job Management</h1>
                 <button class="btn-sm btn-primary" onclick="openPostJobModal()"><i data-lucide="plus-circle" size="16"></i> Post New Job</button> 
             </div>
+
+            <div style="background: rgba(16, 185, 129, 0.05); border: 1px dashed var(--success); padding: 20px; border-radius: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="color: var(--success); margin-bottom: 5px;">Morning Cycle Control</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-dim);">Updates all <strong>Active</strong> tasks to the current time, unlocking them for users.</p>
+                </div>
+                <button onclick="triggerResetCycle()" id="resetCycleBtn" class="btn-sm btn-success" style="padding: 10px 20px;">
+                    <i data-lucide="refresh-cw" size="16"></i> Reset Task Cycle
+                </button>
+            </div>
+
             <div class="search-row" style="display:flex; gap:10px; margin-bottom: 20px;">
                 <input type="text" id="searchJob" class="search-bar" placeholder="Search job title..." onkeyup="filterJobs()">
                 <select id="filterJobStatus" class="search-bar" style="width:150px;" onchange="filterJobs()">
@@ -368,6 +365,41 @@
                 </table>
             </div>
         </div>
+        
+        <div id="view-broadcast" class="page-view d-none">
+            <div class="page-header">
+                <h1 class="page-title">Email Broadcasts</h1>
+            </div>
+            
+            <div class="card" style="max-width: 800px;">
+                <p style="color: var(--text-dim); margin-bottom: 25px;">Send bulk emails directly to your users. Emails are sent via BCC in batches to protect user privacy.</p>
+                
+                <div class="form-group">
+                    <label>Target Audience</label>
+                    <select id="broadcastTarget">
+                        <option value="All Users">All Active Users</option>
+                        <option value="Pro Users">Pro Hunters Only</option>
+                        <option value="Starter Users">Starter Hunters Only</option>
+                        <option value="Unpaid Users">Unpaid Users Only (Promotions)</option>
+                        <option value="Agents">Agents / Partners Only</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Subject</label>
+                    <input type="text" id="broadcastSubject" placeholder="e.g. 🚀 50% Off Starter Package Today Only!">
+                </div>
+                
+                <div class="form-group">
+                    <label>Message Content</label>
+                    <textarea id="broadcastMessage" rows="12" placeholder="Write your email content here..."></textarea>
+                </div>
+                
+                <button class="btn-sm btn-primary" id="broadcastBtn" style="padding: 12px 24px; font-size: 1rem;" onclick="sendBroadcast()">
+                    <i data-lucide="send" size="18"></i> Send Broadcast
+                </button>
+            </div>
+        </div>
 
     </main>
 
@@ -383,8 +415,7 @@
             
             <input type="hidden" id="adminChatTicketId">
 
-            <div id="adminChatBox" class="chat-box" style="flex-grow: 1;">
-                </div>
+            <div id="adminChatBox" class="chat-box" style="flex-grow: 1;"></div>
 
             <div id="adminChatReplyArea" style="display: flex; gap: 10px; margin-top: 10px;">
                 <input type="text" id="adminChatInput" class="form-control" placeholder="Type a reply to user..." style="flex-grow: 1;">
