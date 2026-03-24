@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target === 'submissions') loadSubmissions();
             if (target === 'withdrawals') loadWithdrawals();
             if (target === 'users') loadUsers();
-            if (target === 'agents') loadAgents(); // NEW
+            if (target === 'agents') loadAgents(); 
             if (target === 'tickets') loadTickets(); 
             if (target === 'manual-payments') loadManualPayments();
         });
@@ -911,7 +911,7 @@ async function executeRejectManualPayment() {
 }
 
 /* ============================================================
-   NEW: AGENT / PARTNER MANAGEMENT MODULE
+   AGENT / PARTNER MANAGEMENT MODULE
    ============================================================ */
 
 async function loadAgents() {
@@ -963,6 +963,49 @@ function filterAgents() {
     renderAgentsTable(filtered);
 }
 
+/* ============================================================
+   NEW: EMAIL BROADCAST MODULE
+   ============================================================ */
+
+async function sendBroadcast() {
+    const target = document.getElementById('broadcastTarget').value;
+    const subject = document.getElementById('broadcastSubject').value.trim();
+    const message = document.getElementById('broadcastMessage').value.trim();
+    const btn = document.getElementById('broadcastBtn');
+
+    if (!subject || !message) {
+        showToast("Please fill in both the subject and message.", "danger");
+        return;
+    }
+
+    if (!confirm(`Are you sure you want to send this email to: ${target}?`)) return;
+
+    btn.innerHTML = `<i data-lucide="loader" class="spinning"></i> Sending...`;
+    btn.disabled = true;
+
+    showToast("Preparing and batching emails...", "pending");
+
+    const payload = {
+        action: "adminSendBroadcast",
+        target: target,
+        subject: subject,
+        message: message
+    };
+
+    const res = await adminApiRequest(payload);
+    
+    if (res.status === "Success") {
+        showToast(`Broadcast sent successfully to ${res.data.sentCount} users!`, "success");
+        document.getElementById('broadcastSubject').value = "";
+        document.getElementById('broadcastMessage').value = "";
+    } else {
+        showToast(res.message || "Failed to send broadcast.", "danger");
+    }
+
+    btn.innerHTML = `<i data-lucide="send" size="18"></i> Send Broadcast`;
+    btn.disabled = false;
+    lucide.createIcons();
+}
 
 window.refreshData = function() {
     const activeTab = document.querySelector('.nav-item.active').getAttribute('data-view');
@@ -987,4 +1030,55 @@ function showToast(message, type = "success") {
     toast.innerText = message;
     document.body.appendChild(toast);
     setTimeout(() => { toast.remove(); }, 3000);
+}
+
+async function triggerResetCycle() {
+    const btn = document.getElementById('resetCycleBtn');
+    
+    // Disable and show loading state immediately (No pop-up)
+    btn.disabled = true;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = `<i data-lucide="loader-2" class="spin" size="16"></i> Resetting...`;
+    if(window.lucide) lucide.createIcons();
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: "adminResetCycle",
+                passkey: localStorage.getItem('admin_passkey') // Using stored passkey
+            })
+        });
+        const result = await response.json();
+
+        if (result.status === "Success") {
+            btn.style.background = "var(--success)";
+            btn.innerHTML = `<i data-lucide="check" size="16"></i> Cycle Reset!`;
+            
+            // Auto-refresh the page after 1.5 seconds so you see the "Active" status
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+            
+        } else {
+            btn.style.background = "var(--danger)";
+            btn.innerHTML = `Error: ${result.message}`;
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.style.background = "";
+                btn.innerHTML = originalContent;
+                if(window.lucide) lucide.createIcons();
+            }, 3000);
+        }
+    } catch (err) {
+        btn.style.background = "var(--danger)";
+        btn.innerHTML = "Server Timeout";
+        console.error("Reset Failed:", err);
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.style.background = "";
+            btn.innerHTML = originalContent;
+            if(window.lucide) lucide.createIcons();
+        }, 3000);
+    }
 }
