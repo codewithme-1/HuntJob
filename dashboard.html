@@ -31,6 +31,10 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding-bottom: 80px; }
 
+        /* Maintenance Lock */
+        body.maintenance-active { overflow: hidden !important; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
         /* Sidebar Desktop */
         .sidebar {
             position: fixed; left: 0; top: 0; bottom: 0; width: 260px;
@@ -131,7 +135,6 @@
         }
         .refresh-btn:hover { background: var(--secondary); color: white; transform: translateY(-1px); box-shadow: var(--shadow-md);}
         .refresh-btn.spinning i { animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* Wallet Card */
         .wallet-card {
@@ -293,8 +296,33 @@
         }
     </style>
 </head>
-<body>
+<body class="maintenance-active">
 
+    <div id="maintenanceOverlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); z-index: 99999; display: flex; justify-content: center; align-items: center; text-align: center; color: white; padding: 20px;">
+        <div style="background: var(--card-bg); border: 1px solid var(--glass-border); padding: 40px; border-radius: 20px; max-width: 500px; box-shadow: var(--shadow-float);">
+            <i data-lucide="settings" size="64" color="var(--primary)" style="margin-bottom: 20px; animation: spin 4s linear infinite;"></i>
+            <h2 style="font-size: 2rem; margin-bottom: 15px; color: var(--text-main); letter-spacing: -0.5px;">System Upgrades</h2>
+            <p style="color: var(--text-dim); font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6;">We are currently performing scheduled maintenance to bring you better features and faster payouts. We will be back online in:</p>
+            
+            <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 15px; border-radius: 12px; min-width: 80px;">
+                    <div id="m-hours" style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">01</div>
+                    <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Hours</div>
+                </div>
+                <div style="font-size: 2.5rem; font-weight: 800; color: var(--text-dim); margin-top: 10px;">:</div>
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 15px; border-radius: 12px; min-width: 80px;">
+                    <div id="m-minutes" style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">59</div>
+                    <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Mins</div>
+                </div>
+                <div style="font-size: 2.5rem; font-weight: 800; color: var(--text-dim); margin-top: 10px;">:</div>
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 15px; border-radius: 12px; min-width: 80px;">
+                    <div id="m-seconds" style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">59</div>
+                    <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Secs</div>
+                </div>
+            </div>
+            <p style="color: var(--primary); font-size: 0.9rem; font-weight: 600; margin-top: 20px;"><i data-lucide="shield-check" size="16" style="vertical-align: middle;"></i> Your data and wallet balances are safe.</p>
+        </div>
+    </div>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <nav class="sidebar" id="appSidebar">
@@ -924,6 +952,29 @@
                 });
             });
         });
+
+        // Set countdown for 2 hours from now
+        const countDownDate = new Date().getTime() + (2 * 60 * 60 * 1000);
+        
+        const maintenanceTimer = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = countDownDate - now;
+
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("m-hours").innerText = hours < 10 ? "0" + hours : hours;
+            document.getElementById("m-minutes").innerText = minutes < 10 ? "0" + minutes : minutes;
+            document.getElementById("m-seconds").innerText = seconds < 10 ? "0" + seconds : seconds;
+
+            if (distance < 0) {
+                clearInterval(maintenanceTimer);
+                document.getElementById("m-hours").innerText = "00";
+                document.getElementById("m-minutes").innerText = "00";
+                document.getElementById("m-seconds").innerText = "00";
+            }
+        }, 1000);
     </script>
     <script src="dashboard.js"></script>
     <script>lucide.createIcons();</script>
