@@ -3,8 +3,8 @@
  * Analytics, CRM, and Gamified Affiliate Engine
  */
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUR9lHgatZbhQOpi18ltUL3ohmmj8F6lya4M3E7CAP-flZ34Ec2VUAVrm-BVVR1AxOww/exec";
-
+// NEW Python Local Backend URL
+const SCRIPT_URL = "http://127.0.0.1:8000/api/agents/exec";
 let currentAgent = null;
 let revenueChartInstance = null;
 let funnelChartInstance = null;
