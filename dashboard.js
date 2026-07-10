@@ -1,9 +1,5 @@
-/**
- * HuntJob - Dashboard Logic
- * Auto-sync Balances, Transaction History, and Self-Healing Session
- */
-
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUR9lHgatZbhQOpi18ltUL3ohmmj8F6lya4M3E7CAP-flZ34Ec2VUAVrm-BVVR1AxOww/exec";
+// We keep SCRIPT_URL active for unmigrated endpoints, and use API_BASE_URL for the new Python ones.
+const API_BASE_URL = "http://127.0.0.1:8000/api";
 const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 Minutes
 
 // Global state for filtering & Tickets
@@ -26,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         const sessionData = localStorage.getItem('huntJob_session');
         if (!sessionData) throw new Error("No Session");
+        
         
         user = JSON.parse(sessionData);
         if (!user || !user.email || user.email === "undefined" || user.email === undefined) {
@@ -242,17 +239,18 @@ function updateUIVisuals(data) {
 
     const refLinkEl = document.getElementById('refLinkText');
     if (refLinkEl && data.uid) {
-        refLinkEl.innerText = `https://www.huntjobs.co.ke/?ref=${data.uid}`;
+        // UPDATED: Automatically detects HTTP (local) vs HTTPS (live)
+        refLinkEl.innerText = `${window.location.origin}/index.html?ref=${data.uid}`;
     }
 }
 
 /**
- * Sync fresh user stats from Google Sheet
+ * Sync fresh user stats from Python FastAPI
  */
 async function syncAllData(email) {
     if (!email || email === "undefined") return;
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=getUserStats&email=${encodeURIComponent(email)}&t=${Date.now()}`);
+        const response = await fetch(`${API_BASE_URL}/users/stats?email=${encodeURIComponent(email)}`);
         const result = await response.json();
 
         const payload = result.data || result.message;
@@ -261,11 +259,6 @@ async function syncAllData(email) {
             const oldSession = JSON.parse(localStorage.getItem('huntJob_session')) || {};
             localStorage.setItem('huntJob_session', JSON.stringify({...oldSession, ...payload}));
             updateUIVisuals(payload);
-            
-            // PHASE 4: Check if they have a daily bonus waiting (AND haven't dismissed it this session)
-            if (payload.canClaimBonus === true && !sessionStorage.getItem('bonusDealtWith')) {
-                triggerDailyBonusModal(payload.tier);
-            }
 
             if (oldSession.tier !== payload.tier) {
                 renderTasks(payload);
@@ -278,70 +271,16 @@ async function syncAllData(email) {
 
 /**
  * ==========================================
- * PHASE 4 - DAILY BONUS & LEADERBOARD
+ * PHASE 4 - LEADERBOARD
  * ==========================================
  */
-
-function triggerDailyBonusModal(tier) {
-    const modal = document.getElementById('dailyBonusModal');
-    const textEl = document.getElementById('dailyBonusText');
-    
-    // Don't show if modal is already open
-    if (modal.style.display === 'flex') return;
-
-    if (tier === "Starter") {
-        textEl.innerHTML = `Welcome back Starter Hunter!<br>Claim your <strong>100 Daily Tokens</strong> to keep bidding.`;
-    } else if (tier === "Pro") {
-        textEl.innerHTML = `Welcome back Pro Hunter!<br>Claim your massive <strong>250 Daily Tokens</strong>. Secure the bag!`;
-    } else {
-        textEl.innerHTML = `Welcome back!<br>Claim your <strong>20 Daily Tokens</strong>.<br><br><span style="font-size: 0.85rem; color: var(--warning);">Upgrade to Starter to get 100 daily tokens tomorrow.</span>`;
-    }
-
-    modal.style.display = 'flex';
-}
-
-window.dismissBonus = function() {
-    sessionStorage.setItem('bonusDealtWith', 'true');
-    closeModal('dailyBonusModal');
-};
-
-window.claimDailyBonus = async function() {
-    const session = JSON.parse(localStorage.getItem('huntJob_session'));
-    const btn = document.getElementById('claimBonusBtn');
-
-    btn.innerText = "Claiming..."; btn.disabled = true;
-
-    try {
-        const res = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "claimDailyBonus", uid: session.uid })
-        });
-        const text = await res.text();
-        const result = JSON.parse(text);
-
-        if (result.status === "Success") {
-            showToast(`+${result.data.tokensAdded} Tokens Added!`, "success");
-            sessionStorage.setItem('bonusDealtWith', 'true'); // Stop the loop!
-            closeModal('dailyBonusModal');
-            syncAllData(session.email); // Update UI
-        } else {
-            showToast(result.message, "warning");
-            sessionStorage.setItem('bonusDealtWith', 'true');
-            closeModal('dailyBonusModal');
-        }
-    } catch (e) {
-        showToast("Network Error.", "error");
-    } finally {
-        btn.innerText = "Claim Tokens"; btn.disabled = false;
-    }
-};
 
 window.fetchLeaderboard = async function() {
     const list = document.getElementById('leaderboardTicker');
     if (!list) return;
 
     try {
-        const res = await fetch(`${SCRIPT_URL}?action=getLeaderboard&t=${Date.now()}`);
+        const res = await fetch(`${API_BASE_URL}/users/leaderboard`);
         const result = await res.json();
 
         if (result.status === "Success" && Array.isArray(result.data)) {
@@ -401,10 +340,10 @@ window.savePersonalInfo = async function(e) {
     btn.disabled = true;
 
     try {
-        const response = await fetch(SCRIPT_URL, {
+        const response = await fetch(`${API_BASE_URL}/users/update-profile`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                action: "updateProfile",
                 email: session.email,
                 username: newUsername,
                 phone: newPhone
@@ -455,10 +394,10 @@ window.updatePassword = async function(e) {
     btn.disabled = true;
 
     try {
-        const response = await fetch(SCRIPT_URL, {
+        const response = await fetch(`${API_BASE_URL}/users/update-password`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                action: "updatePassword",
                 email: session.email,
                 currentPass: currentPass,
                 newPass: newPass
@@ -491,45 +430,50 @@ window.copyUid = function() {
 /**
  * Fetch Withdrawal History
  */
-async function fetchWithdrawals(email) {
+window.fetchWithdrawals = async function(email) {
     const historyBody = document.getElementById('withdrawalHistoryBody');
     if (!historyBody || !email || email === "undefined") return;
 
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=getWithdrawals&email=${encodeURIComponent(email)}&t=${Date.now()}`);
+        const response = await fetch(`${API_BASE_URL}/payments/withdrawals?email=${encodeURIComponent(email)}&t=${Date.now()}`);
         const result = await response.json();
 
         const payload = result.data || result.message || [];
 
         if (result.status === "Success" && Array.isArray(payload)) {
-            historyBody.innerHTML = ""; 
-            
             if (payload.length === 0) {
                 historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">No transactions yet.</td></tr>';
                 return;
             }
 
-            payload.reverse().forEach(tx => {
+            // Using map().join('') for fast, bug-free rendering
+            historyBody.innerHTML = payload.reverse().map(tx => {
                 const statusStyle = tx.status === 'Pending' ? 'color: #f59e0b' : 'color: #10b981';
-                historyBody.innerHTML += `
+                
+                // FIXED: We check both 'recipient' and 'phone' to ensure we capture the number regardless of key name
+                const phoneNumber = tx.recipient || tx.phone || "N/A";
+                
+                return `
                     <tr style="border-bottom: 1px solid var(--glass-border); font-size: 0.85rem;">
                         <td style="padding: 12px 0;">${new Date(tx.date).toLocaleDateString()}</td>
                         <td style="padding: 12px 0; font-weight: 600;">KES ${parseSafeNumber(tx.amount)}</td>
-                        <td style="padding: 12px 0; color: var(--text-dim);">${tx.phone}</td>
+                        <td style="padding: 12px 0; color: var(--text-dim);">${phoneNumber}</td>
                         <td style="padding: 12px 0; font-weight: 600; ${statusStyle}">${tx.status}</td>
                     </tr>
                 `;
-            });
+            }).join('');
+        } else {
+            console.error("Backend Error:", result.message);
         }
     } catch (err) {
         console.error("History Fetch Error:", err);
     }
-}
+};
 
 /**
  * Fetch Referral History
  */
-async function fetchReferrals(uid) {
+window.fetchReferrals = async function(uid) {
     const historyBody = document.getElementById('referralHistoryBody');
     if (!historyBody) return;
 
@@ -539,14 +483,14 @@ async function fetchReferrals(uid) {
     }
 
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=getReferrals&uid=${encodeURIComponent(uid)}&t=${Date.now()}`);
+        const response = await fetch(`${API_BASE_URL}/users/referrals?uid=${encodeURIComponent(uid)}&t=${Date.now()}`);
         const textResponse = await response.text();
         let result;
         
         try {
             result = JSON.parse(textResponse);
         } catch (jsonErr) {
-            historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Backend Error: Please deploy Code.gs as a <b>New Version</b>.</td></tr>';
+            historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Backend Error: Failed to parse response.</td></tr>';
             return;
         }
 
@@ -560,15 +504,17 @@ async function fetchReferrals(uid) {
                 return;
             }
 
-            payload.reverse().forEach(ref => {
+            // Using map().join('') is much faster and safer for browser rendering than innerHTML += in a loop
+            historyBody.innerHTML = payload.reverse().map(ref => {
                 const statusStyle = ref.status === 'Pending' ? 'color: #f59e0b' : 'color: #10b981';
                 let dateStr = "Recent";
+                
                 if (ref.date) {
                     const d = new Date(ref.date);
                     if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
                 }
 
-                historyBody.innerHTML += `
+                return `
                     <tr style="border-bottom: 1px solid var(--glass-border); font-size: 0.85rem;">
                         <td style="padding: 12px 0;">${dateStr}</td>
                         <td style="padding: 12px 0; font-weight: 600;">${ref.username || 'Unknown'}</td>
@@ -576,15 +522,15 @@ async function fetchReferrals(uid) {
                         <td style="padding: 12px 0; font-weight: 600; color: #10b981;">KES ${parseSafeNumber(ref.earned)}</td>
                     </tr>
                 `;
-            });
+            }).join('');
+            
         } else {
             historyBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Failed to load: ${result.message}</td></tr>`;
         }
     } catch (err) {
         historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Network Error. Please check your connection.</td></tr>';
     }
-}
-
+};
 /**
  * Freelance Grid & Category Rendering
  */
@@ -598,7 +544,7 @@ async function renderTasks(userData) {
     }
 
     try {
-        const response = await fetch(`${SCRIPT_URL}?action=getTasks&uid=${userData.uid || ''}&t=${new Date().getTime()}`);
+        const response = await fetch(`${API_BASE_URL}/tasks/active?uid=${userData.uid || ''}`);
         const result = await response.json();
 
         if (result.status === "Success" && Array.isArray(result.data)) {
@@ -610,7 +556,6 @@ async function renderTasks(userData) {
         taskList.innerHTML = '<p style="color:#ef4444; padding: 20px; grid-column: 1 / -1;">Failed to load jobs.</p>'; 
     }
 }
-
 function generateCategoryFilters(jobs) {
     const filterContainer = document.getElementById('categoryFilters');
     if (!filterContainer) return;
@@ -715,7 +660,6 @@ function displayFilteredJobs(jobsToRender) {
     
     if (window.lucide) lucide.createIcons();
 }
-
 /**
  * --- UPGRADE, PAYMENT & POLLING LOGIC ---
  */
@@ -740,10 +684,10 @@ window.startPaymentPolling = function() {
         }
 
         try {
-            const res = await fetch(SCRIPT_URL, {
+            const res = await fetch(`${API_BASE_URL}/payments/poll`, {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    action: "pollPaymentStatus", 
                     email: session.email 
                 })
             });
@@ -807,10 +751,10 @@ window.processPayment = async function() {
     btn.disabled = true;
 
     try {
-        const response = await fetch(SCRIPT_URL, {
+        const response = await fetch(`${API_BASE_URL}/payments/stk-push`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                action: "initiatePayment",
                 email: session.email,
                 phone: phone,
                 amount: selectedUpgrade.amount,
@@ -856,10 +800,10 @@ window.processTokenPayment = async function() {
     btn.innerText = "Check your phone..."; btn.disabled = true;
 
     try {
-        const response = await fetch(SCRIPT_URL, {
+        const response = await fetch(`${API_BASE_URL}/payments/stk-push`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                action: "initiatePayment",
                 email: session.email,
                 phone: phone,
                 amount: selectedToken.amount,
@@ -913,9 +857,10 @@ window.processBid = async function() {
     btn.innerText = "Submitting Proposal..."; btn.disabled = true;
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(`${API_BASE_URL}/tasks/apply`, {
             method: 'POST',
-            body: JSON.stringify({ action: "applyForTask", email: session.email, taskId: jobId, bidAmount: amount, proposal: proposal })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: session.email, taskId: jobId, bidAmount: amount, proposal: proposal })
         });
         const text = await res.text();
         let result;
@@ -956,9 +901,10 @@ window.executeSubmitWork = async function() {
     btn.innerText = "Sending to Admin..."; btn.disabled = true;
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(`${API_BASE_URL}/tasks/submit-work`, {
             method: 'POST',
-            body: JSON.stringify({ action: "submitTaskWork", subId: subId, content: content })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subId: subId, content: content })
         });
         const text = await res.text();
         let result;
@@ -989,7 +935,7 @@ window.fetchMyTasks = async function(email) {
     list.innerHTML = '<p style="color:var(--text-dim); grid-column: 1 / -1;">Loading your workspace...</p>';
     
     try {
-        const res = await fetch(`${SCRIPT_URL}?action=getMyTasks&email=${encodeURIComponent(email)}&t=${Date.now()}`);
+        const res = await fetch(`${API_BASE_URL}/tasks/my-tasks?email=${encodeURIComponent(email)}&t=${Date.now()}`);
         const result = await res.json();
         
         if (result.status === "Success") {
@@ -1059,7 +1005,7 @@ window.fetchTickets = async function(uid) {
     if (!list) return;
 
     try {
-        const res = await fetch(`${SCRIPT_URL}?action=getTickets&uid=${encodeURIComponent(uid)}&t=${Date.now()}`);
+        const res = await fetch(`${API_BASE_URL}/support/tickets?uid=${encodeURIComponent(uid)}&t=${Date.now()}`);
         const result = await res.json();
         
         if (result.status === "Success") {
@@ -1118,9 +1064,10 @@ window.submitNewTicket = async function() {
     btn.innerText = "Submitting..."; btn.disabled = true;
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(`${API_BASE_URL}/support/tickets/create`, {
             method: 'POST',
-            body: JSON.stringify({ action: "createTicket", uid: session.uid, subject: subject, message: msg })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: session.uid, subject: subject, message: msg })
         });
         const text = await res.text();
         let result;
@@ -1192,9 +1139,10 @@ window.sendTicketReply = async function() {
     btn.innerHTML = `<i data-lucide="loader" class="spinning"></i>`; btn.disabled = true;
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(`${API_BASE_URL}/support/tickets/reply`, {
             method: 'POST',
-            body: JSON.stringify({ action: "replyTicket", ticketId: ticketId, message: msg })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticketId: ticketId, message: msg })
         });
         const text = await res.text();
         let result;
@@ -1228,9 +1176,10 @@ window.closeActiveTicket = async function() {
     btn.innerText = "Closing..."; btn.disabled = true;
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(`${API_BASE_URL}/support/tickets/close`, {
             method: 'POST',
-            body: JSON.stringify({ action: "closeTicket", ticketId: ticketId })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticketId: ticketId })
         });
         const text = await res.text();
         let result;
@@ -1270,9 +1219,10 @@ window.generateCoPayCode = async function() {
     btn.innerText = "Generating..."; btn.disabled = true;
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(`${API_BASE_URL}/copay/create`, {
             method: 'POST',
-            body: JSON.stringify({ action: "createCoPay", uid: session.uid, email: session.email, tier: tier })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: session.uid, email: session.email, tier: tier })
         });
         const text = await res.text();
         let result;
@@ -1280,7 +1230,7 @@ window.generateCoPayCode = async function() {
             result = JSON.parse(text);
         } catch (e) {
             console.error("Backend Error:", text);
-            showToast("Server error. Please deploy Code.gs", "error");
+            showToast("Server error. Check FastAPI logs.", "error");
             return;
         }
         
@@ -1315,10 +1265,10 @@ window.payHalfMpesa = async function(isSelf) {
     showToast(`Sending STK Push for KES ${halfAmount}...`, "success");
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(`${API_BASE_URL}/payments/stk-push`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                action: "initiatePayment", 
                 email: session.email, 
                 phone: targetPhone, 
                 amount: halfAmount, 
@@ -1350,9 +1300,10 @@ window.findCoPayRequest = async function() {
     btn.innerText = "Searching..."; btn.disabled = true;
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(`${API_BASE_URL}/copay/get`, {
             method: 'POST',
-            body: JSON.stringify({ action: "getCoPay", code: code })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code })
         });
         const text = await res.text();
         let result;
@@ -1360,7 +1311,7 @@ window.findCoPayRequest = async function() {
             result = JSON.parse(text);
         } catch (e) {
             console.error("Backend Error:", text);
-            showToast("Server error. Please deploy Code.gs", "error");
+            showToast("Server error. Check FastAPI logs.", "error");
             return;
         }
         
@@ -1387,25 +1338,22 @@ window.findCoPayRequest = async function() {
     } catch(err) { showToast("Network Error", "error"); }
     finally { btn.innerText = "Find Request"; btn.disabled = false; }
 };
-
 window.fundWithWallet = async function() {
     const session = JSON.parse(localStorage.getItem('huntJob_session'));
     const code = document.getElementById('fundCoPayCodeValue').value;
     const amountStr = document.getElementById('fundCoPayAmountValue').value;
     const btn = document.getElementById('fundWalletBtn');
 
-    // Safe mathematical parsing
-    const cleanBal = parseSafeNumber(session.balance);
     const cleanAmt = parseSafeNumber(amountStr);
 
-    if (cleanBal < cleanAmt) return showToast("Insufficient wallet balance.", "error");
-
-    btn.innerText = "Paying..."; btn.disabled = true;
+    btn.innerText = "Paying..."; 
+    btn.disabled = true;
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(`${API_BASE_URL}/copay/fund-wallet`, {
             method: 'POST',
-            body: JSON.stringify({ action: "fundCoPayWallet", uid: session.uid, code: code, amount: cleanAmt })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: session.uid, code: code, amount: cleanAmt })
         });
         
         const text = await res.text(); 
@@ -1414,7 +1362,7 @@ window.fundWithWallet = async function() {
             result = JSON.parse(text);
         } catch (jsonErr) {
             console.error("Backend Error Response:", text);
-            showToast("Backend crash. Please deploy Code.gs as New Version.", "error");
+            showToast("Backend crash. Check FastAPI logs.", "error");
             return;
         }
 
@@ -1422,9 +1370,18 @@ window.fundWithWallet = async function() {
             showToast("Successfully paid for your friend!", "success");
             closeModal('fundCoPayModal');
             syncAllData(session.email); // Deduct balance visually
-        } else { showToast(result.message, "error"); }
-    } catch(e) { showToast("Network Error. Check connection.", "error"); console.error(e); }
-    finally { btn.innerHTML = `<i data-lucide="wallet" size="16" style="vertical-align:middle;"></i> Pay from Wallet Balance`; btn.disabled = false; if(window.lucide) lucide.createIcons(); }
+        } else { 
+            // This will securely display "Insufficient wallet balance" straight from Python if it's true!
+            showToast(result.message, "error"); 
+        }
+    } catch(e) { 
+        showToast("Network Error. Check connection.", "error"); 
+        console.error(e); 
+    } finally { 
+        btn.innerHTML = `<i data-lucide="wallet" size="16" style="vertical-align:middle;"></i> Pay from Wallet Balance`; 
+        btn.disabled = false; 
+        if(window.lucide) lucide.createIcons(); 
+    }
 };
 
 window.fundWithSTK = async function() {
@@ -1440,10 +1397,11 @@ window.fundWithSTK = async function() {
     showToast(`Sending STK Push for KES ${cleanAmt}...`, "success");
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(`${API_BASE_URL}/payments/stk-push`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                action: "initiatePayment", email: session.email, phone: phone, amount: cleanAmt, 
+                email: session.email, phone: phone, amount: cleanAmt, 
                 type: "CoPay", copayCode: code 
             })
         });
@@ -1470,9 +1428,10 @@ window.requestWithdrawal = async function() {
     showToast("Submitting withdrawal request...", "success");
 
     try {
-        const response = await fetch(SCRIPT_URL, {
+        const response = await fetch(`${API_BASE_URL}/payments/withdraw`, {
             method: 'POST',
-            body: JSON.stringify({ action: "requestWithdrawal", email: session.email, amount: amount, phone: phone })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: session.email, amount: amount, phone: phone })
         });
         const text = await response.text(); 
         const result = JSON.parse(text);
@@ -1544,10 +1503,10 @@ window.submitManualPayment = async function() {
     btn.innerText = "Submitting..."; btn.disabled = true;
 
     try {
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(`${API_BASE_URL}/payments/manual`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                action: "submitManualPayment", 
                 email: session.email, 
                 uid: session.uid,
                 type: type, 
