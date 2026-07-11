@@ -1,12 +1,12 @@
 /**
  * HuntJob - Frontend Logic
- * Handling UI interactions and API calls to Python FastAPI
+ * Handling UI interactions and API calls to Google Apps Script
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- 1. ELEMENTS SELECTION & CONFIG ---
-    const API_BASE_URL = "http://127.0.0.1:8000/api";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUR9lHgatZbhQOpi18ltUL3ohmmj8F6lya4M3E7CAP-flZ34Ec2VUAVrm-BVVR1AxOww/exec";
     const menuToggle = document.getElementById('menuToggle');
     const navLinks = document.getElementById('navLinks');
     const authModal = document.getElementById('authModal');
@@ -40,13 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 3. API HELPER FUNCTION ---
-    async function apiCall(endpoint, data) {
+    async function apiCall(data) {
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const response = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify(data)
             });
             return await response.json(); 
@@ -139,7 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.innerText = "Sending OTP...";
         btn.disabled = true;
 
+        // FIXED: Include the hidden referral code in the payload
         const formData = {
+            action: "register",
             username: document.getElementById('regName').value,
             email: document.getElementById('regEmail').value,
             phone: document.getElementById('regPhone').value,
@@ -147,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ref: document.getElementById('refCodeInput') ? document.getElementById('refCodeInput').value : "" 
         };
 
-        const result = await apiCall('/auth/register', formData);
+        const result = await apiCall(formData);
 
         if(result.status === "Success") {
             sessionStorage.setItem('pendingEmail', formData.email);
@@ -176,7 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.innerText = "Verifying...";
         btn.disabled = true;
 
-        const result = await apiCall('/auth/verify', {
+        const result = await apiCall({
+            action: "verifyOTP",
             email: email,
             otp: otpVal
         });
@@ -206,11 +206,12 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = true;
 
         const formData = {
+            action: "login",
             email: document.getElementById('loginEmail').value,
             password: document.getElementById('loginPass').value
         };
 
-        const result = await apiCall('/auth/login', formData);
+        const result = await apiCall(formData);
 
         if (result.status === "Success") {
             const userData = result.data || result.message; // Handling any payload type
@@ -232,8 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const email = prompt("Enter your registered email:");
         if (email) {
-            // Note: Make sure the /auth/forgot-password route is built in your FastAPI backend!
-            const result = await apiCall('/auth/forgot-password', { email: email });
+            const result = await apiCall({ action: "forgotPassword", email: email });
             const message = typeof result.message === 'string' ? result.message : result.data;
             showToast(message, result.status === "Success" ? "success" : "error");
         }
