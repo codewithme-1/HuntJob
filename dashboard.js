@@ -1,5 +1,9 @@
-// We keep SCRIPT_URL active for unmigrated endpoints, and use API_BASE_URL for the new Python ones.
-const API_BASE_URL = "http://127.0.0.1:8000/api";
+/**
+ * HuntJob - Dashboard Logic
+ * Auto-sync Balances, Transaction History, and Self-Healing Session
+ */
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUR9lHgatZbhQOpi18ltUL3ohmmj8F6lya4M3E7CAP-flZ34Ec2VUAVrm-BVVR1AxOww/exec";
 const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 Minutes
 
 // Global state for filtering & Tickets
@@ -23,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const sessionData = localStorage.getItem('huntJob_session');
         if (!sessionData) throw new Error("No Session");
         
-        
         user = JSON.parse(sessionData);
         if (!user || !user.email || user.email === "undefined" || user.email === undefined) {
             throw new Error("Corrupted Session");
@@ -38,6 +41,21 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUIVisuals(user);
     renderTasks(user); 
     fetchLeaderboard(); // NEW: Load leaderboard on init
+
+    // --- FLASH PROMO POP-UP LOGIC (Every Login Session) ---
+    setTimeout(() => {
+        const hasSeenPromoThisSession = sessionStorage.getItem("huntJob_promoSeenSession");
+        const currentTier = user.tier || "Unpaid";
+        
+        // ONLY show the promo if they haven't seen it this session AND they are Unpaid
+        if (!hasSeenPromoThisSession && currentTier === "Unpaid") {
+            const promoModal = document.getElementById('promoEventModal');
+            if (promoModal) {
+                promoModal.style.display = 'flex';
+                sessionStorage.setItem("huntJob_promoSeenSession", "true");
+            }
+        }
+    }, 1500);
 
     syncAllData(user.email);
     setInterval(() => syncAllData(user.email), 20000); 
@@ -107,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 4. LOGOUT LOGIC ---
     window.logout = () => {
         localStorage.removeItem('huntJob_session');
+        sessionStorage.removeItem('huntJob_promoSeenSession'); // Reset the promo flag!
         window.location.href = "index.html";
     };
     document.getElementById('logoutBtn').onclick = (e) => {
@@ -239,18 +258,50 @@ function updateUIVisuals(data) {
 
     const refLinkEl = document.getElementById('refLinkText');
     if (refLinkEl && data.uid) {
-        // UPDATED: Automatically detects HTTP (local) vs HTTPS (live)
-        refLinkEl.innerText = `${window.location.origin}/index.html?ref=${data.uid}`;
+        refLinkEl.innerText = `https://www.huntjobs.co.ke/?ref=${data.uid}`;
+    }
+
+    // Update Telegram Card Status
+    const tgCard = document.getElementById('telegramCardContainer');
+    if (tgCard) {
+        if (data.telegramLinked) {
+            // Change to Green "Linked" state
+            tgCard.style.background = "rgba(16, 185, 129, 0.05)";
+            tgCard.style.border = "1px solid #10b981";
+            tgCard.innerHTML = `
+                <h3 style="color: #10b981; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i data-lucide="check-circle" size="20"></i> Telegram Linked
+                </h3>
+                <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 15px;">You are receiving instant job alerts.</p>
+                <button class="btn-hunt" style="background: #10b981; border: none; padding: 10px 20px; color: white; border-radius: 5px; cursor: default; font-weight: bold; display: inline-flex; align-items: center; gap: 8px;" disabled>
+                    <i data-lucide="check" size="16"></i> Connected
+                </button>
+            `;
+        } else {
+            // Revert to Blue "Unlinked" state if they somehow disconnect
+            tgCard.style.background = "rgba(0, 136, 204, 0.05)";
+            tgCard.style.border = "1px dashed #0088cc";
+            tgCard.innerHTML = `
+                <h3 style="color: #0088cc; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i data-lucide="send" size="20"></i> Get Instant Job Alerts
+                </h3>
+                <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 15px;">Link your Telegram to get notified the second high-paying tasks go live!</p>
+                <button onclick="linkTelegram()" class="btn-hunt" style="background: #0088cc; border: none; padding: 10px 20px; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px;">
+                    <i data-lucide="link" size="16"></i> Connect Telegram Bot
+                </button>
+            `;
+        }
+        if (window.lucide) lucide.createIcons();
     }
 }
 
 /**
- * Sync fresh user stats from Python FastAPI
+ * Sync fresh user stats from Google Sheet
  */
 async function syncAllData(email) {
     if (!email || email === "undefined") return;
     try {
-        const response = await fetch(`${API_BASE_URL}/users/stats?email=${encodeURIComponent(email)}`);
+        const response = await fetch(`${SCRIPT_URL}?action=getUserStats&email=${encodeURIComponent(email)}&t=${Date.now()}`);
         const result = await response.json();
 
         const payload = result.data || result.message;
@@ -259,6 +310,11 @@ async function syncAllData(email) {
             const oldSession = JSON.parse(localStorage.getItem('huntJob_session')) || {};
             localStorage.setItem('huntJob_session', JSON.stringify({...oldSession, ...payload}));
             updateUIVisuals(payload);
+            
+            // PHASE 4: Check if they have a daily bonus waiting (AND haven't dismissed it this session)
+            if (payload.canClaimBonus === true && !sessionStorage.getItem('bonusDealtWith')) {
+                triggerDailyBonusModal(payload.tier);
+            }
 
             if (oldSession.tier !== payload.tier) {
                 renderTasks(payload);
@@ -271,16 +327,70 @@ async function syncAllData(email) {
 
 /**
  * ==========================================
- * PHASE 4 - LEADERBOARD
+ * PHASE 4 - DAILY BONUS & LEADERBOARD
  * ==========================================
  */
+
+function triggerDailyBonusModal(tier) {
+    const modal = document.getElementById('dailyBonusModal');
+    const textEl = document.getElementById('dailyBonusText');
+    
+    // Don't show if modal is already open
+    if (modal.style.display === 'flex') return;
+
+    if (tier === "Starter") {
+        textEl.innerHTML = `Welcome back Starter Hunter!<br>Claim your <strong>100 Daily Tokens</strong> to keep bidding.`;
+    } else if (tier === "Pro") {
+        textEl.innerHTML = `Welcome back Pro Hunter!<br>Claim your massive <strong>250 Daily Tokens</strong>. Secure the bag!`;
+    } else {
+        textEl.innerHTML = `Welcome back!<br>Claim your <strong>20 Daily Tokens</strong>.<br><br><span style="font-size: 0.85rem; color: var(--warning);">Upgrade to Starter to get 100 daily tokens tomorrow.</span>`;
+    }
+
+    modal.style.display = 'flex';
+}
+
+window.dismissBonus = function() {
+    sessionStorage.setItem('bonusDealtWith', 'true');
+    closeModal('dailyBonusModal');
+};
+
+window.claimDailyBonus = async function() {
+    const session = JSON.parse(localStorage.getItem('huntJob_session'));
+    const btn = document.getElementById('claimBonusBtn');
+
+    btn.innerText = "Claiming..."; btn.disabled = true;
+
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "claimDailyBonus", uid: session.uid })
+        });
+        const text = await res.text();
+        const result = JSON.parse(text);
+
+        if (result.status === "Success") {
+            showToast(`+${result.data.tokensAdded} Tokens Added!`, "success");
+            sessionStorage.setItem('bonusDealtWith', 'true'); // Stop the loop!
+            closeModal('dailyBonusModal');
+            syncAllData(session.email); // Update UI
+        } else {
+            showToast(result.message, "warning");
+            sessionStorage.setItem('bonusDealtWith', 'true');
+            closeModal('dailyBonusModal');
+        }
+    } catch (e) {
+        showToast("Network Error.", "error");
+    } finally {
+        btn.innerText = "Claim Tokens"; btn.disabled = false;
+    }
+};
 
 window.fetchLeaderboard = async function() {
     const list = document.getElementById('leaderboardTicker');
     if (!list) return;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/users/leaderboard`);
+        const res = await fetch(`${SCRIPT_URL}?action=getLeaderboard&t=${Date.now()}`);
         const result = await res.json();
 
         if (result.status === "Success" && Array.isArray(result.data)) {
@@ -340,10 +450,10 @@ window.savePersonalInfo = async function(e) {
     btn.disabled = true;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/users/update-profile`, {
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                action: "updateProfile",
                 email: session.email,
                 username: newUsername,
                 phone: newPhone
@@ -394,10 +504,10 @@ window.updatePassword = async function(e) {
     btn.disabled = true;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/users/update-password`, {
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                action: "updatePassword",
                 email: session.email,
                 currentPass: currentPass,
                 newPass: newPass
@@ -430,50 +540,45 @@ window.copyUid = function() {
 /**
  * Fetch Withdrawal History
  */
-window.fetchWithdrawals = async function(email) {
+async function fetchWithdrawals(email) {
     const historyBody = document.getElementById('withdrawalHistoryBody');
     if (!historyBody || !email || email === "undefined") return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/payments/withdrawals?email=${encodeURIComponent(email)}&t=${Date.now()}`);
+        const response = await fetch(`${SCRIPT_URL}?action=getWithdrawals&email=${encodeURIComponent(email)}&t=${Date.now()}`);
         const result = await response.json();
 
         const payload = result.data || result.message || [];
 
         if (result.status === "Success" && Array.isArray(payload)) {
+            historyBody.innerHTML = ""; 
+            
             if (payload.length === 0) {
                 historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">No transactions yet.</td></tr>';
                 return;
             }
 
-            // Using map().join('') for fast, bug-free rendering
-            historyBody.innerHTML = payload.reverse().map(tx => {
+            payload.reverse().forEach(tx => {
                 const statusStyle = tx.status === 'Pending' ? 'color: #f59e0b' : 'color: #10b981';
-                
-                // FIXED: We check both 'recipient' and 'phone' to ensure we capture the number regardless of key name
-                const phoneNumber = tx.recipient || tx.phone || "N/A";
-                
-                return `
+                historyBody.innerHTML += `
                     <tr style="border-bottom: 1px solid var(--glass-border); font-size: 0.85rem;">
                         <td style="padding: 12px 0;">${new Date(tx.date).toLocaleDateString()}</td>
                         <td style="padding: 12px 0; font-weight: 600;">KES ${parseSafeNumber(tx.amount)}</td>
-                        <td style="padding: 12px 0; color: var(--text-dim);">${phoneNumber}</td>
+                        <td style="padding: 12px 0; color: var(--text-dim);">${tx.phone}</td>
                         <td style="padding: 12px 0; font-weight: 600; ${statusStyle}">${tx.status}</td>
                     </tr>
                 `;
-            }).join('');
-        } else {
-            console.error("Backend Error:", result.message);
+            });
         }
     } catch (err) {
         console.error("History Fetch Error:", err);
     }
-};
+}
 
 /**
  * Fetch Referral History
  */
-window.fetchReferrals = async function(uid) {
+async function fetchReferrals(uid) {
     const historyBody = document.getElementById('referralHistoryBody');
     if (!historyBody) return;
 
@@ -483,14 +588,14 @@ window.fetchReferrals = async function(uid) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/users/referrals?uid=${encodeURIComponent(uid)}&t=${Date.now()}`);
+        const response = await fetch(`${SCRIPT_URL}?action=getReferrals&uid=${encodeURIComponent(uid)}&t=${Date.now()}`);
         const textResponse = await response.text();
         let result;
         
         try {
             result = JSON.parse(textResponse);
         } catch (jsonErr) {
-            historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Backend Error: Failed to parse response.</td></tr>';
+            historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Backend Error: Please deploy Code.gs as a <b>New Version</b>.</td></tr>';
             return;
         }
 
@@ -504,17 +609,15 @@ window.fetchReferrals = async function(uid) {
                 return;
             }
 
-            // Using map().join('') is much faster and safer for browser rendering than innerHTML += in a loop
-            historyBody.innerHTML = payload.reverse().map(ref => {
+            payload.reverse().forEach(ref => {
                 const statusStyle = ref.status === 'Pending' ? 'color: #f59e0b' : 'color: #10b981';
                 let dateStr = "Recent";
-                
                 if (ref.date) {
                     const d = new Date(ref.date);
                     if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString();
                 }
 
-                return `
+                historyBody.innerHTML += `
                     <tr style="border-bottom: 1px solid var(--glass-border); font-size: 0.85rem;">
                         <td style="padding: 12px 0;">${dateStr}</td>
                         <td style="padding: 12px 0; font-weight: 600;">${ref.username || 'Unknown'}</td>
@@ -522,15 +625,15 @@ window.fetchReferrals = async function(uid) {
                         <td style="padding: 12px 0; font-weight: 600; color: #10b981;">KES ${parseSafeNumber(ref.earned)}</td>
                     </tr>
                 `;
-            }).join('');
-            
+            });
         } else {
             historyBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Failed to load: ${result.message}</td></tr>`;
         }
     } catch (err) {
         historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444;">Network Error. Please check your connection.</td></tr>';
     }
-};
+}
+
 /**
  * Freelance Grid & Category Rendering
  */
@@ -544,7 +647,7 @@ async function renderTasks(userData) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/tasks/active?uid=${userData.uid || ''}`);
+        const response = await fetch(`${SCRIPT_URL}?action=getTasks&uid=${userData.uid || ''}&t=${new Date().getTime()}`);
         const result = await response.json();
 
         if (result.status === "Success" && Array.isArray(result.data)) {
@@ -556,6 +659,7 @@ async function renderTasks(userData) {
         taskList.innerHTML = '<p style="color:#ef4444; padding: 20px; grid-column: 1 / -1;">Failed to load jobs.</p>'; 
     }
 }
+
 function generateCategoryFilters(jobs) {
     const filterContainer = document.getElementById('categoryFilters');
     if (!filterContainer) return;
@@ -660,9 +764,36 @@ function displayFilteredJobs(jobsToRender) {
     
     if (window.lucide) lucide.createIcons();
 }
+
 /**
  * --- UPGRADE, PAYMENT & POLLING LOGIC ---
  */
+
+window.showPaymentResult = function(isSuccess, title, message) {
+    // 1. Close all active payment/promo modals so they aren't stuck on screen
+    closeModal('paymentModal');
+    closeModal('tokenModal');
+    closeModal('fundCoPayModal');
+    closeModal('manageCoPayModal');
+    if (typeof closePromoModal === "function") closePromoModal();
+
+    // 2. Set the UI based on success or failure
+    const iconDiv = document.getElementById('resultIcon');
+    if (isSuccess) {
+        iconDiv.style.background = "rgba(16, 185, 129, 0.1)";
+        iconDiv.innerHTML = '<i data-lucide="check-circle" size="40" color="#10b981"></i>';
+    } else {
+        iconDiv.style.background = "rgba(239, 68, 68, 0.1)";
+        iconDiv.innerHTML = '<i data-lucide="x-circle" size="40" color="#ef4444"></i>';
+    }
+
+    // 3. Inject text and show
+    document.getElementById('resultTitle').innerText = title;
+    document.getElementById('resultMessage').innerText = message;
+    
+    document.getElementById('paymentResultModal').style.display = 'flex';
+    if (window.lucide) lucide.createIcons(); // Re-render the icons!
+};
 
 // NEW: Polling Engine
 window.startPaymentPolling = function() {
@@ -676,18 +807,30 @@ window.startPaymentPolling = function() {
     const paymentPoll = setInterval(async () => {
         pollCount++;
         
-        // Stop polling after 2 minutes (30 attempts)
+        // 🚨 FAILURE STATE: Stop polling after 2 minutes (30 attempts)
         if (pollCount > 30) {
             clearInterval(paymentPoll);
-            console.log("Polling stopped.");
+            
+            showPaymentResult(
+                false, 
+                "Payment Unconfirmed", 
+                "We did not receive your payment. Please ensure you entered your M-Pesa PIN and have sufficient balance. If money was deducted, please open a Support Ticket with your M-Pesa message."
+            );
+            
+            // Reset the buttons in case they want to try again
+            const btns = ['paySubmitBtn', 'payTokenBtn'];
+            btns.forEach(id => {
+                const btn = document.getElementById(id);
+                if(btn) { btn.disabled = false; btn.innerText = "Try Again"; }
+            });
             return;
         }
 
         try {
-            const res = await fetch(`${API_BASE_URL}/payments/poll`, {
+            const res = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
+                    action: "pollPaymentStatus", 
                     email: session.email 
                 })
             });
@@ -699,26 +842,24 @@ window.startPaymentPolling = function() {
                 const liveTokens = parseSafeNumber(result.data.tokens);
                 const liveTier = result.data.tier;
                 
-                // Check if tokens or tier increased
+                // 🎉 SUCCESS STATE: Check if tokens or tier increased
                 if (liveTokens > previousTokens || liveTier !== previousTier) {
                     clearInterval(paymentPoll); // Stop polling!
-                    
-                    showToast("Payment Received & Reconciled! Your account has been updated.", "success");
                     
                     // Force a full UI sync to update everything properly
                     await syncAllData(session.email);
                     
-                    // Close modals just in case they are still open
-                    closeModal('paymentModal');
-                    closeModal('tokenModal');
-                    closeModal('fundCoPayModal');
-                    closeModal('manageCoPayModal');
+                    showPaymentResult(
+                        true, 
+                        "Payment Successful!", 
+                        "Your account has been instantly upgraded and your new balance is ready. Happy hunting!"
+                    );
                 }
             }
         } catch (e) {
             console.error("Polling error", e);
         }
-    }, 4000);
+    }, 4000); // Checks every 4 seconds
 };
 
 window.upgradeRedirect = function() {
@@ -751,14 +892,14 @@ window.processPayment = async function() {
     btn.disabled = true;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/payments/stk-push`, {
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                action: "initiatePayment",
                 email: session.email,
                 phone: phone,
                 amount: selectedUpgrade.amount,
-                type: "Tier",
+                type: selectedUpgrade.isPromo ? "PromoTier" : "Tier",
                 tier: selectedUpgrade.tier
             })
         });
@@ -800,10 +941,10 @@ window.processTokenPayment = async function() {
     btn.innerText = "Check your phone..."; btn.disabled = true;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/payments/stk-push`, {
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                action: "initiatePayment",
                 email: session.email,
                 phone: phone,
                 amount: selectedToken.amount,
@@ -857,10 +998,9 @@ window.processBid = async function() {
     btn.innerText = "Submitting Proposal..."; btn.disabled = true;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/tasks/apply`, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: session.email, taskId: jobId, bidAmount: amount, proposal: proposal })
+            body: JSON.stringify({ action: "applyForTask", email: session.email, taskId: jobId, bidAmount: amount, proposal: proposal })
         });
         const text = await res.text();
         let result;
@@ -901,10 +1041,9 @@ window.executeSubmitWork = async function() {
     btn.innerText = "Sending to Admin..."; btn.disabled = true;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/tasks/submit-work`, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ subId: subId, content: content })
+            body: JSON.stringify({ action: "submitTaskWork", subId: subId, content: content })
         });
         const text = await res.text();
         let result;
@@ -935,7 +1074,7 @@ window.fetchMyTasks = async function(email) {
     list.innerHTML = '<p style="color:var(--text-dim); grid-column: 1 / -1;">Loading your workspace...</p>';
     
     try {
-        const res = await fetch(`${API_BASE_URL}/tasks/my-tasks?email=${encodeURIComponent(email)}&t=${Date.now()}`);
+        const res = await fetch(`${SCRIPT_URL}?action=getMyTasks&email=${encodeURIComponent(email)}&t=${Date.now()}`);
         const result = await res.json();
         
         if (result.status === "Success") {
@@ -1005,7 +1144,7 @@ window.fetchTickets = async function(uid) {
     if (!list) return;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/support/tickets?uid=${encodeURIComponent(uid)}&t=${Date.now()}`);
+        const res = await fetch(`${SCRIPT_URL}?action=getTickets&uid=${encodeURIComponent(uid)}&t=${Date.now()}`);
         const result = await res.json();
         
         if (result.status === "Success") {
@@ -1064,10 +1203,9 @@ window.submitNewTicket = async function() {
     btn.innerText = "Submitting..."; btn.disabled = true;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/support/tickets/create`, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: session.uid, subject: subject, message: msg })
+            body: JSON.stringify({ action: "createTicket", uid: session.uid, subject: subject, message: msg })
         });
         const text = await res.text();
         let result;
@@ -1139,10 +1277,9 @@ window.sendTicketReply = async function() {
     btn.innerHTML = `<i data-lucide="loader" class="spinning"></i>`; btn.disabled = true;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/support/tickets/reply`, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ticketId: ticketId, message: msg })
+            body: JSON.stringify({ action: "replyTicket", ticketId: ticketId, message: msg })
         });
         const text = await res.text();
         let result;
@@ -1176,10 +1313,9 @@ window.closeActiveTicket = async function() {
     btn.innerText = "Closing..."; btn.disabled = true;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/support/tickets/close`, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ticketId: ticketId })
+            body: JSON.stringify({ action: "closeTicket", ticketId: ticketId })
         });
         const text = await res.text();
         let result;
@@ -1219,10 +1355,9 @@ window.generateCoPayCode = async function() {
     btn.innerText = "Generating..."; btn.disabled = true;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/copay/create`, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: session.uid, email: session.email, tier: tier })
+            body: JSON.stringify({ action: "createCoPay", uid: session.uid, email: session.email, tier: tier })
         });
         const text = await res.text();
         let result;
@@ -1230,7 +1365,7 @@ window.generateCoPayCode = async function() {
             result = JSON.parse(text);
         } catch (e) {
             console.error("Backend Error:", text);
-            showToast("Server error. Check FastAPI logs.", "error");
+            showToast("Server error. Please deploy Code.gs", "error");
             return;
         }
         
@@ -1265,10 +1400,10 @@ window.payHalfMpesa = async function(isSelf) {
     showToast(`Sending STK Push for KES ${halfAmount}...`, "success");
 
     try {
-        const res = await fetch(`${API_BASE_URL}/payments/stk-push`, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
+                action: "initiatePayment", 
                 email: session.email, 
                 phone: targetPhone, 
                 amount: halfAmount, 
@@ -1300,10 +1435,9 @@ window.findCoPayRequest = async function() {
     btn.innerText = "Searching..."; btn.disabled = true;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/copay/get`, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: code })
+            body: JSON.stringify({ action: "getCoPay", code: code })
         });
         const text = await res.text();
         let result;
@@ -1311,7 +1445,7 @@ window.findCoPayRequest = async function() {
             result = JSON.parse(text);
         } catch (e) {
             console.error("Backend Error:", text);
-            showToast("Server error. Check FastAPI logs.", "error");
+            showToast("Server error. Please deploy Code.gs", "error");
             return;
         }
         
@@ -1338,22 +1472,25 @@ window.findCoPayRequest = async function() {
     } catch(err) { showToast("Network Error", "error"); }
     finally { btn.innerText = "Find Request"; btn.disabled = false; }
 };
+
 window.fundWithWallet = async function() {
     const session = JSON.parse(localStorage.getItem('huntJob_session'));
     const code = document.getElementById('fundCoPayCodeValue').value;
     const amountStr = document.getElementById('fundCoPayAmountValue').value;
     const btn = document.getElementById('fundWalletBtn');
 
+    // Safe mathematical parsing
+    const cleanBal = parseSafeNumber(session.balance);
     const cleanAmt = parseSafeNumber(amountStr);
 
-    btn.innerText = "Paying..."; 
-    btn.disabled = true;
+    if (cleanBal < cleanAmt) return showToast("Insufficient wallet balance.", "error");
+
+    btn.innerText = "Paying..."; btn.disabled = true;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/copay/fund-wallet`, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: session.uid, code: code, amount: cleanAmt })
+            body: JSON.stringify({ action: "fundCoPayWallet", uid: session.uid, code: code, amount: cleanAmt })
         });
         
         const text = await res.text(); 
@@ -1362,7 +1499,7 @@ window.fundWithWallet = async function() {
             result = JSON.parse(text);
         } catch (jsonErr) {
             console.error("Backend Error Response:", text);
-            showToast("Backend crash. Check FastAPI logs.", "error");
+            showToast("Backend crash. Please deploy Code.gs as New Version.", "error");
             return;
         }
 
@@ -1370,18 +1507,9 @@ window.fundWithWallet = async function() {
             showToast("Successfully paid for your friend!", "success");
             closeModal('fundCoPayModal');
             syncAllData(session.email); // Deduct balance visually
-        } else { 
-            // This will securely display "Insufficient wallet balance" straight from Python if it's true!
-            showToast(result.message, "error"); 
-        }
-    } catch(e) { 
-        showToast("Network Error. Check connection.", "error"); 
-        console.error(e); 
-    } finally { 
-        btn.innerHTML = `<i data-lucide="wallet" size="16" style="vertical-align:middle;"></i> Pay from Wallet Balance`; 
-        btn.disabled = false; 
-        if(window.lucide) lucide.createIcons(); 
-    }
+        } else { showToast(result.message, "error"); }
+    } catch(e) { showToast("Network Error. Check connection.", "error"); console.error(e); }
+    finally { btn.innerHTML = `<i data-lucide="wallet" size="16" style="vertical-align:middle;"></i> Pay from Wallet Balance`; btn.disabled = false; if(window.lucide) lucide.createIcons(); }
 };
 
 window.fundWithSTK = async function() {
@@ -1397,11 +1525,10 @@ window.fundWithSTK = async function() {
     showToast(`Sending STK Push for KES ${cleanAmt}...`, "success");
 
     try {
-        const res = await fetch(`${API_BASE_URL}/payments/stk-push`, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                email: session.email, phone: phone, amount: cleanAmt, 
+                action: "initiatePayment", email: session.email, phone: phone, amount: cleanAmt, 
                 type: "CoPay", copayCode: code 
             })
         });
@@ -1428,10 +1555,9 @@ window.requestWithdrawal = async function() {
     showToast("Submitting withdrawal request...", "success");
 
     try {
-        const response = await fetch(`${API_BASE_URL}/payments/withdraw`, {
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: session.email, amount: amount, phone: phone })
+            body: JSON.stringify({ action: "requestWithdrawal", email: session.email, amount: amount, phone: phone })
         });
         const text = await response.text(); 
         const result = JSON.parse(text);
@@ -1503,10 +1629,10 @@ window.submitManualPayment = async function() {
     btn.innerText = "Submitting..."; btn.disabled = true;
 
     try {
-        const res = await fetch(`${API_BASE_URL}/payments/manual`, {
+        const res = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
+                action: "submitManualPayment", 
                 email: session.email, 
                 uid: session.uid,
                 type: type, 
@@ -1527,4 +1653,62 @@ window.submitManualPayment = async function() {
     } finally {
         btn.innerText = "Submit for Verification"; btn.disabled = false;
     }
+};
+
+function linkTelegram() {
+    // 1. Get the user's session data from local storage
+    const sessionData = localStorage.getItem('huntJob_session'); // Adjust this key if you named it something else!
+    
+    if (!sessionData) {
+        if(typeof showToast === "function") showToast("Please log in to link your account.", "danger");
+        else alert("Please log in to link your account.");
+        return;
+    }
+
+    try {
+        const session = JSON.parse(sessionData);
+        const uid = session.uid; // This grabs their unique ID
+
+        if (!uid) {
+            console.error("UID missing from session.");
+            return;
+        }
+
+        // 2. Put your exact Bot Username here (NO @ symbol)
+        const botUsername = "HuntJobAlertsBot"; 
+
+        // 3. Build the special deep link and open Telegram
+        // The ?start= parameter magically passes their UID to your Apps Script
+        const telegramUrl = `https://t.me/${botUsername}?start=${uid}`;
+        window.open(telegramUrl, '_blank');
+
+    } catch (e) {
+        console.error("Error linking Telegram:", e);
+    }
+}
+
+/**
+ * ==========================================
+ * FLASH EVENT PROMO LOGIC
+ * ==========================================
+ */
+
+// Function to handle the Promo Payment flow
+window.openPromoPaymentModal = function(amount, tier) {
+    // 1. Close the Promo event modal
+    closePromoModal();
+
+    // 2. We use the existing selectedUpgrade object but flag it so we know it's a promo
+    selectedUpgrade = { amount: amount, tier: tier, isPromo: true };
+    
+    // 3. Update the existing payment modal UI to show the discounted price
+    document.getElementById('payAmountLabel').innerText = `KES ${amount}`;
+    
+    // 4. Open the STK Push modal
+    document.getElementById('paymentModal').style.display = 'flex';
+};
+
+window.closePromoModal = function() {
+    const promoModal = document.getElementById('promoEventModal');
+    if (promoModal) promoModal.style.display = 'none';
 };
