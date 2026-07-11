@@ -228,7 +228,6 @@
         .form-control:focus { background: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
         .form-control:disabled { opacity: 0.6; cursor: not-allowed; background: #f1f5f9;}
         .settings-section { animation: fadeIn 0.3s ease-out; }
-
         /* M-Pesa Input Styling */
         .mpesa-input-wrapper { margin-top: 1rem; }
         .mpesa-input-wrapper label { font-size: 0.9rem; color: var(--text-main); display: block; margin-bottom: 0.5rem; font-weight: 600;}
@@ -264,14 +263,12 @@
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 2000; }
         .modal-content { background: var(--card-bg); width: 90%; max-width: 440px; padding: 2.5rem; border-radius: 20px; border: 1px solid var(--glass-border); text-align: center; animation: fadeIn 0.3s ease-out; box-shadow: var(--shadow-float);}
-
         /* Support Chat CSS */
         .chat-box { max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; padding-right: 5px; scrollbar-width: thin; }
         .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; }
         .chat-user { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
         .chat-admin { align-self: flex-start; background: var(--bg-color); border: 1px solid var(--glass-border); color: var(--text-main); border-bottom-left-radius: 2px; }
         .chat-time { display: block; font-size: 0.7rem; opacity: 0.8; margin-top: 6px; text-align: right; }
-
         /* Mobile Bottom Nav */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.95);
@@ -280,7 +277,6 @@
             box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
         }
         .bottom-nav .nav-item { flex: 1; justify-content: center; padding: 10px; border-radius: 8px;}
-
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
@@ -290,6 +286,20 @@
             .balance-amount { font-size: 2.2rem; }
             .settings-container { flex-direction: column; }
             .header-top { margin-bottom: 1.5rem; }
+        }
+        /* Responsive fix for Top Hunters mobile clipping */
+        @media (max-width: 576px) {
+            .leaderboard-ticker,
+            .ticker-wrap,
+            .ticker-item {
+                height: auto !important;
+                overflow: visible !important;
+            }
+            .ticker-item {
+                flex-wrap: wrap !important;
+                white-space: nowrap !important;
+                padding: 4px 0 !important;
+            }
         }
     </style>
 </head>
