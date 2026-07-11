@@ -2,7 +2,9 @@
  * HuntJob Admin Panel Logic (Fully Connected)
  */
 
-const SCRIPT_URL = "http://127.0.0.1:8000/api/admin/exec";
+// IMPORTANT: Replace this with your Google Apps Script Web App URL
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwUR9lHgatZbhQOpi18ltUL3ohmmj8F6lya4M3E7CAP-flZ34Ec2VUAVrm-BVVR1AxOww/exec";
+
 let adminKey = localStorage.getItem("hj_admin_key") || "";
 let currentUsers = []; 
 let currentWithdrawals = [];
@@ -1040,8 +1042,14 @@ async function triggerResetCycle() {
     if(window.lucide) lucide.createIcons();
 
     try {
-        // FIXED: Using your master wrapper so the correct passkey is sent!
-        const result = await adminApiRequest({ action: "adminResetCycle" });
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: "adminResetCycle",
+                passkey: localStorage.getItem('admin_passkey') // Using stored passkey
+            })
+        });
+        const result = await response.json();
 
         if (result.status === "Success") {
             btn.style.background = "var(--success)";
