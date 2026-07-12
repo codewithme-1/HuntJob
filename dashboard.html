@@ -395,33 +395,35 @@
             </section>
         </div>
 
-        <div id="view-upgrade" class="page-view d-none">
+       <div id="view-upgrade" class="page-view d-none">
             <h2 style="text-align: center; font-size: 2.2rem; letter-spacing: -0.5px;">Unlock Your Earning Potential</h2>
             <p style="text-align: center; color: var(--text-dim); margin-top: 10px; font-size: 1.1rem;">Select a package to start claiming high-paying writing tasks.</p>
             
             <div class="pricing-grid">
                 <div class="package-card">
                     <h3>Starter Hunter</h3>
-                    <div class="price">500<span>/one-time</span></div>
+                    <div class="promo-tag" style="color: var(--warning); font-size: 0.8rem; font-weight: bold; margin-bottom: 5px;">🔥 Launch Promo - Ends Soon!</div>
+                    <div class="price"><s style="color: #ef4444; font-size: 1.5rem; margin-right: 8px;">500</s>300<span>/one-time</span></div>
                     <ul class="feat-list">
                         <li><i data-lucide="check-circle" color="#10b981" size="20"></i> 100 Free Tokens Included</li>
                         <li><i data-lucide="check-circle" color="#10b981" size="20"></i> Access to Starter Bids</li>
                         <li><i data-lucide="check-circle" color="#10b981" size="20"></i> 5% Referral Bonus</li>
                     </ul>
-                    <button class="btn-alt" style="width: 100%;" onclick="openPaymentModal(500, 'Starter')">Select Starter</button>
+                    <button class="btn-alt" style="width: 100%;" onclick="openPaymentModal(300, 'Starter')">Select Starter</button>
                     <button class="btn-alt" style="width: 100%; margin-top:10px; font-size:0.85rem; border:none; box-shadow: none;" onclick="openCreateCoPayModal('Starter')"><i data-lucide="handshake" size="16" style="vertical-align:middle;"></i> Split cost with a friend</button>
                 </div>
 
                 <div class="package-card featured">
                     <h3>Pro Hunter</h3>
-                    <div class="price">1500<span>/one-time</span></div>
+                    <div class="promo-tag" style="color: var(--warning); font-size: 0.8rem; font-weight: bold; margin-bottom: 5px;">🔥 Launch Promo - Ends Soon!</div>
+                    <div class="price"><s style="color: #ef4444; font-size: 1.5rem; margin-right: 8px;">1500</s>1000<span>/one-time</span></div>
                     <ul class="feat-list">
                         <li><i data-lucide="check-circle" color="#10b981" size="20"></i> 1,000 Free Tokens Included</li>
                         <li><i data-lucide="check-circle" color="#10b981" size="20"></i> Unlimited Daily Bids</li>
                         <li><i data-lucide="check-circle" color="#10b981" size="20"></i> 10% Referral Bonus</li>
                         <li><i data-lucide="check-circle" color="#10b981" size="20"></i> Access to Pro Contracts</li>
                     </ul>
-                    <button class="btn-main" style="width: 100%;" onclick="openPaymentModal(1500, 'Pro')">Go Pro Now</button>
+                    <button class="btn-main" style="width: 100%;" onclick="openPaymentModal(1000, 'Pro')">Go Pro Now</button>
                     <button class="btn-alt" style="width: 100%; margin-top:10px; font-size:0.85rem; border:none; box-shadow: none; background: transparent;" onclick="openCreateCoPayModal('Pro')"><i data-lucide="handshake" size="16" style="vertical-align:middle;"></i> Split cost with a friend</button>
                 </div>
             </div>
